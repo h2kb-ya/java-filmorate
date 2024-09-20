@@ -12,6 +12,6 @@ public class ReleaseDateValidator implements ConstraintValidator<ReleaseDateAfte
             return false;
         }
 
-        return releaseDate.isAfter(LocalDate.of(1985, 12, 28));
+        return releaseDate.isAfter(LocalDate.of(1895, 12, 28));
     }
 }
