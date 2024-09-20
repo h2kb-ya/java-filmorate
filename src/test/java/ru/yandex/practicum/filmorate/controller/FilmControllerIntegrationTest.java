@@ -18,7 +18,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static ru.yandex.practicum.filmorate.model.Film.DURATION_OF_FILM_MUST_BE_POSITIVE;
-import static ru.yandex.practicum.filmorate.model.Film.FILM_RELEASE_DATE_MUST_BE_AFTER_1985;
+import static ru.yandex.practicum.filmorate.model.Film.FILM_RELEASE_DATE_MUST_BE_AFTER_1895;
 import static ru.yandex.practicum.filmorate.model.Film.MAX_LENGTH_OF_DESCRIPTION_200_CHARACTERS;
 import static ru.yandex.practicum.filmorate.model.Film.NAME_OF_THE_FILM_MUST_NOT_BE_BLANK;
 
@@ -165,7 +165,7 @@ public class FilmControllerIntegrationTest extends AbstractApplicationMvcIntegra
                 .andReturn();
 
         String exceptionMessage = result.getResolvedException().getMessage();
-        assertTrue(exceptionMessage.contains(FILM_RELEASE_DATE_MUST_BE_AFTER_1985));
+        assertTrue(exceptionMessage.contains(FILM_RELEASE_DATE_MUST_BE_AFTER_1895));
     }
 
     @Test

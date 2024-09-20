@@ -10,7 +10,7 @@ import java.lang.annotation.Target;
 @Constraint(validatedBy = ReleaseDateValidator.class)
 @Target(ElementType.FIELD)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface ReleaseDateAfter1985 {
+public @interface ReleaseDateAfter1895 {
 
     String message() default "";
 
