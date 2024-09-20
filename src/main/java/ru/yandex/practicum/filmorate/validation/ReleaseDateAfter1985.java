@@ -12,7 +12,7 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface ReleaseDateAfter1985 {
 
-    String message() default "Film release date must be before 1985";
+    String message() default "";
 
     Class<?>[] groups() default {};
 
