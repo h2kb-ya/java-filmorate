@@ -17,10 +17,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static ru.yandex.practicum.filmorate.model.Film.DURATION_OF_FILM_MUST_BE_POSITIVE;
-import static ru.yandex.practicum.filmorate.model.Film.FILM_RELEASE_DATE_MUST_BE_AFTER_1895;
-import static ru.yandex.practicum.filmorate.model.Film.MAX_LENGTH_OF_DESCRIPTION_200_CHARACTERS;
-import static ru.yandex.practicum.filmorate.model.Film.NAME_OF_THE_FILM_MUST_NOT_BE_BLANK;
 
 public class FilmControllerIntegrationTest extends AbstractApplicationMvcIntegrationTest {
 
@@ -115,13 +111,13 @@ public class FilmControllerIntegrationTest extends AbstractApplicationMvcIntegra
         String content = serialize(film);
 
         MvcResult result = mockMvc.perform(post("/films")
-                .content(content)
-                .contentType(MediaType.APPLICATION_JSON))
+                        .content(content)
+                        .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest())
                 .andReturn();
 
         String exceptionMessage = result.getResolvedException().getMessage();
-        assertTrue(exceptionMessage.contains(NAME_OF_THE_FILM_MUST_NOT_BE_BLANK));
+        assertTrue(exceptionMessage.contains("Name of the film must not be blank"));
     }
 
     @Test
@@ -143,7 +139,7 @@ public class FilmControllerIntegrationTest extends AbstractApplicationMvcIntegra
                 .andReturn();
 
         String exceptionMessage = result.getResolvedException().getMessage();
-        assertTrue(exceptionMessage.contains(MAX_LENGTH_OF_DESCRIPTION_200_CHARACTERS));
+        assertTrue(exceptionMessage.contains("Max length of description - 200 characters"));
     }
 
     @Test
@@ -165,7 +161,7 @@ public class FilmControllerIntegrationTest extends AbstractApplicationMvcIntegra
                 .andReturn();
 
         String exceptionMessage = result.getResolvedException().getMessage();
-        assertTrue(exceptionMessage.contains(FILM_RELEASE_DATE_MUST_BE_AFTER_1895));
+        assertTrue(exceptionMessage.contains("Film release date must be after 1895"));
     }
 
     @Test
@@ -187,7 +183,7 @@ public class FilmControllerIntegrationTest extends AbstractApplicationMvcIntegra
                 .andReturn();
 
         String exceptionMessage = result.getResolvedException().getMessage();
-        assertTrue(exceptionMessage.contains(DURATION_OF_FILM_MUST_BE_POSITIVE));
+        assertTrue(exceptionMessage.contains("Duration of film must be positive"));
     }
 
 }

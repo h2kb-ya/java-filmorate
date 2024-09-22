@@ -8,36 +8,27 @@ import java.time.LocalDate;
 import lombok.Getter;
 import lombok.Setter;
 
-/**
- * User
- */
 @Getter
 public class User {
 
-    public static final String EMAIL_MUST_NOT_BE_BLANK = "Email must not be blank";
-    public static final String ILLEGAL_FORMAT_OF_EMAIL_ADDRESS = "Illegal format of email address";
-    public static final String LOGIN_MUST_NOT_BE_BLANK = "Login must not be blank";
-    public static final String LOGIN_MUST_NOT_CONTAIN_WHITE_SPACES = "Login must not contain white spaces";
-    public static final String BIRTHDAY_DATE_MUST_NOT_BE_IN_THE_FUTURE = "Birthday date must not be in the future";
-
     @Setter
-    int id;
+    private int id;
 
-    @NotBlank(message = EMAIL_MUST_NOT_BE_BLANK)
-    @Email(message = ILLEGAL_FORMAT_OF_EMAIL_ADDRESS)
+    @NotBlank(message = "Email must not be blank")
+    @Email(message = "Illegal format of email address")
     @Setter
-    String email;
+    private String email;
 
-    @NotBlank(message = LOGIN_MUST_NOT_BE_BLANK)
-    @Pattern(regexp = "\\S+", message = LOGIN_MUST_NOT_CONTAIN_WHITE_SPACES)
+    @NotBlank(message = "Login must not be blank")
+    @Pattern(regexp = "\\S+", message = "Login must not contain white spaces")
     @Setter
-    String login;
+    private String login;
 
-    String name;
+    private String name;
 
-    @PastOrPresent(message = BIRTHDAY_DATE_MUST_NOT_BE_IN_THE_FUTURE)
+    @PastOrPresent(message = "Birthday date must not be in the future")
     @Setter
-    LocalDate birthday;
+    private LocalDate birthday;
 
     public void setName(String name) {
         if (name == null || name.isBlank()) {

@@ -1,17 +1,5 @@
 package ru.yandex.practicum.filmorate.controller;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static ru.yandex.practicum.filmorate.model.User.BIRTHDAY_DATE_MUST_NOT_BE_IN_THE_FUTURE;
-import static ru.yandex.practicum.filmorate.model.User.EMAIL_MUST_NOT_BE_BLANK;
-import static ru.yandex.practicum.filmorate.model.User.ILLEGAL_FORMAT_OF_EMAIL_ADDRESS;
-import static ru.yandex.practicum.filmorate.model.User.LOGIN_MUST_NOT_BE_BLANK;
-import static ru.yandex.practicum.filmorate.model.User.LOGIN_MUST_NOT_CONTAIN_WHITE_SPACES;
-
 import java.time.LocalDate;
 import java.util.List;
 import lombok.SneakyThrows;
@@ -22,6 +10,13 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import ru.yandex.practicum.filmorate.model.User;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 public class UserControllerIntegrationTest extends AbstractApplicationMvcIntegrationTest {
 
@@ -118,7 +113,7 @@ public class UserControllerIntegrationTest extends AbstractApplicationMvcIntegra
                 .andReturn();
 
         String exceptionMessage = result.getResolvedException().getMessage();
-        assertTrue(exceptionMessage.contains(ILLEGAL_FORMAT_OF_EMAIL_ADDRESS));
+        assertTrue(exceptionMessage.contains("Illegal format of email address"));
     }
 
     @Test
@@ -134,7 +129,7 @@ public class UserControllerIntegrationTest extends AbstractApplicationMvcIntegra
                 .andReturn();
 
         String exceptionMessage = result.getResolvedException().getMessage();
-        assertTrue(exceptionMessage.contains(EMAIL_MUST_NOT_BE_BLANK));
+        assertTrue(exceptionMessage.contains("Email must not be blank"));
     }
 
     @Test
@@ -150,7 +145,7 @@ public class UserControllerIntegrationTest extends AbstractApplicationMvcIntegra
                 .andReturn();
 
         String exceptionMessage = result.getResolvedException().getMessage();
-        assertTrue(exceptionMessage.contains(LOGIN_MUST_NOT_BE_BLANK));
+        assertTrue(exceptionMessage.contains("Login must not be blank"));
     }
 
     @Test
@@ -166,7 +161,7 @@ public class UserControllerIntegrationTest extends AbstractApplicationMvcIntegra
                 .andReturn();
 
         String exceptionMessage = result.getResolvedException().getMessage();
-        assertTrue(exceptionMessage.contains(LOGIN_MUST_NOT_CONTAIN_WHITE_SPACES));
+        assertTrue(exceptionMessage.contains("Login must not contain white spaces"));
     }
 
     @Test
@@ -182,6 +177,6 @@ public class UserControllerIntegrationTest extends AbstractApplicationMvcIntegra
                 .andReturn();
 
         String exceptionMessage = result.getResolvedException().getMessage();
-        assertTrue(exceptionMessage.contains(BIRTHDAY_DATE_MUST_NOT_BE_IN_THE_FUTURE));
+        assertTrue(exceptionMessage.contains("Birthday date must not be in the future"));
     }
 }
