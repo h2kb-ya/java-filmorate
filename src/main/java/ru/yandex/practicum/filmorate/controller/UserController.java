@@ -13,50 +13,50 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
-import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.User;
 
 @Slf4j
 @RestController
-@RequestMapping("/films")
-public class FilmController {
+@RequestMapping("/users")
+public class UserController {
 
-    private final Map<Integer, Film> films = new HashMap<>();
+    private final Map<Integer, User> users = new HashMap<>();
 
     @GetMapping
-    public Collection<Film> getFilms() {
-        return films.values();
+    public Collection<User> getUsers() {
+        return users.values();
     }
 
     @PostMapping
-    public Film add(@RequestBody @Valid Film film) {
-        film.setId(getNextId());
+    public User create(@RequestBody @Valid User user) {
+        user.setId(getNextId());
 
-        log.info("Adding new film: {}", film);
-        films.put(film.getId(), film);
+        log.info("Creating new user: {}", user);
+        users.put(user.getId(), user);
 
-        return film;
+        return user;
     }
 
     @PutMapping
-    public Film update(@RequestBody @Valid Film film) {
-        log.info("Updating film: {}", film);
+    public User update(@RequestBody @Valid User user) {
+        log.info("Updating user: {}", user);
 
-        if (!films.containsKey(film.getId())) {
-            log.warn("Film not found: {}", film.getId());
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Film not found");
+        if (!users.containsKey(user.getId())) {
+            log.warn("User not found: {}", user.getId());
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found");
         }
 
-        films.put(film.getId(), film);
+        users.put(user.getId(), user);
 
-        return film;
+        return user;
     }
 
-    public void clearFilms() {
-        films.clear();
+    public void clearUsers() {
+        users.clear();
     }
 
     private int getNextId() {
-        int currentMaxId = films.keySet()
+        int currentMaxId = users.keySet()
                 .stream()
                 .mapToInt(id -> id)
                 .max()
