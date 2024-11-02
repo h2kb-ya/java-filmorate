@@ -1,9 +1,12 @@
 package ru.yandex.practicum.filmorate.model;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 import java.time.LocalDate;
+import java.util.Set;
+import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
@@ -14,7 +17,7 @@ import ru.yandex.practicum.filmorate.validation.ReleaseDateAfter1895;
 @Builder
 public class Film {
 
-    private int id;
+    private Integer id;
 
     @NotBlank(message = "Name of the film must not be blank")
     private String name;
@@ -27,4 +30,15 @@ public class Film {
 
     @Positive(message = "Duration of film must be positive")
     private Long duration;
+
+    @Setter(AccessLevel.NONE)
+    private Set<Integer> likes;
+
+    public void like(Integer userId) {
+        likes.add(userId);
+    }
+
+    public void dislike(Integer userId) {
+        likes.remove(userId);
+    }
 }

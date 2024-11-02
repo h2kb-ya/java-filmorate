@@ -10,6 +10,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.storage.FilmStorage;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -23,10 +24,13 @@ public class FilmControllerIntegrationTest extends AbstractApplicationMvcIntegra
     @Autowired
     private FilmController filmController;
 
+    @Autowired
+    private FilmStorage filmStorage;
+
     @BeforeEach
     public void setUp() {
         mockMvc = MockMvcBuilders.standaloneSetup(filmController).build();
-        filmController.clearFilms();
+        filmStorage.deleteAllFilms();
     }
 
     @Test
@@ -60,8 +64,8 @@ public class FilmControllerIntegrationTest extends AbstractApplicationMvcIntegra
                 .releaseDate(LocalDate.of(2024, 6, 26))
                 .build();
 
-        filmController.add(film1);
-        filmController.add(film2);
+        filmController.create(film1);
+        filmController.create(film2);
 
         MvcResult result = mockMvc.perform(get("/films")
                         .contentType(MediaType.APPLICATION_JSON))

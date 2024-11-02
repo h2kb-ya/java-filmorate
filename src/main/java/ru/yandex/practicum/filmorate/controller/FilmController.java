@@ -1,67 +1,65 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Positive;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.server.ResponseStatusException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.service.FilmService;
 
-@Slf4j
 @RestController
 @RequestMapping("/films")
 public class FilmController {
 
-    private final Map<Integer, Film> films = new HashMap<>();
+    private final FilmService filmService;
+
+    @Autowired
+    public FilmController(FilmService filmService) {
+        this.filmService = filmService;
+    }
 
     @GetMapping
     public Collection<Film> getFilms() {
-        return films.values();
+        return filmService.getFilms();
     }
 
     @PostMapping
-    public Film add(@RequestBody @Valid Film film) {
-        film.setId(getNextId());
-
-        log.info("Adding new film: {}", film);
-        films.put(film.getId(), film);
-
-        return film;
+    public Film create(@RequestBody @Valid final Film film) {
+        return filmService.create(film);
     }
 
     @PutMapping
-    public Film update(@RequestBody @Valid Film film) {
-        log.info("Updating film: {}", film);
-
-        if (!films.containsKey(film.getId())) {
-            log.warn("Film not found: {}", film.getId());
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Film not found");
-        }
-
-        films.put(film.getId(), film);
-
-        return film;
+    public Film update(@RequestBody @Valid final Film film) {
+        return filmService.update(film);
     }
 
-    public void clearFilms() {
-        films.clear();
+    @PutMapping("/{id}/like/{userId}")
+    public void like(
+            @PathVariable @Positive final Integer id,
+            @PathVariable @Positive final Integer userId
+    ) {
+        filmService.like(id, userId);
     }
 
-    private int getNextId() {
-        int currentMaxId = films.keySet()
-                .stream()
-                .mapToInt(id -> id)
-                .max()
-                .orElse(0);
+    @DeleteMapping("/{id}/like/{userId}")
+    public void dislike(
+            @PathVariable @Positive final Integer id,
+            @PathVariable @Positive final Integer userId
+    ) {
+        filmService.dislike(id, userId);
+    }
 
-        return ++currentMaxId;
+    @GetMapping("/popular")
+    public Collection<Film> getPopular(@RequestParam(required = false) @Positive int count) {
+        return filmService.getPopular(count);
     }
 }

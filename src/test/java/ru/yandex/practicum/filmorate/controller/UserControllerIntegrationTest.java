@@ -10,6 +10,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -23,10 +24,13 @@ public class UserControllerIntegrationTest extends AbstractApplicationMvcIntegra
     @Autowired
     private UserController userController;
 
+    @Autowired
+    private UserStorage userStorage;
+
     @BeforeEach
     public void setup() {
         mockMvc = MockMvcBuilders.standaloneSetup(userController).build();
-        userController.clearUsers();
+        userStorage.clearUsers();
     }
 
     @Test
