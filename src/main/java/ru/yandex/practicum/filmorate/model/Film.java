@@ -39,4 +39,11 @@ public class Film {
     public void dislike(Integer userId) {
         likes.remove(userId);
     }
+
+    public Film(String name, String description, LocalDate releaseDate, Long duration) {
+        this.name = name;
+        this.description = description;
+        this.releaseDate = releaseDate;
+        this.duration = duration;
+    }
 }

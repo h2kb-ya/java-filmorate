@@ -50,19 +50,8 @@ public class FilmControllerIntegrationTest extends AbstractApplicationMvcIntegra
     void whenGetFilmsFilmsAreExistThenReturnFilmsList() {
         assertTrue(filmController.getFilms().isEmpty());
 
-        Film film1 = Film.builder()
-                .name("Film 1")
-                .description("Film 1 description")
-                .duration(3600L)
-                .releaseDate(LocalDate.of(2024, 6, 26))
-                .build();
-
-        Film film2 = Film.builder()
-                .name("Film 2")
-                .description("Film 2 description")
-                .duration(3600L)
-                .releaseDate(LocalDate.of(2024, 6, 26))
-                .build();
+        Film film1 = new Film("Film 1", "Film 1 description", LocalDate.of(2024, 6, 26), 3600L);
+        Film film2 = new Film("Film 2", "Film 2 description", LocalDate.of(2024, 6, 26), 3600L);
 
         filmController.create(film1);
         filmController.create(film2);
@@ -82,12 +71,7 @@ public class FilmControllerIntegrationTest extends AbstractApplicationMvcIntegra
     void whenAddFilmThenReturnFilm() {
         assertTrue(filmController.getFilms().isEmpty());
 
-        Film film = Film.builder()
-                .name("Film")
-                .description("Film description")
-                .duration(3600L)
-                .releaseDate(LocalDate.of(2024, 6, 26))
-                .build();
+        Film film = new Film("Film", "Film description", LocalDate.of(2024, 6, 26), 3600L);
 
         String content = serialize(film);
 
@@ -106,11 +90,7 @@ public class FilmControllerIntegrationTest extends AbstractApplicationMvcIntegra
     @Test
     @SneakyThrows
     void whenAddFilmNameIsEmptyThenReturn400() {
-        Film film = Film.builder()
-                .description("Film description")
-                .duration(3600L)
-                .releaseDate(LocalDate.of(2024, 6, 26))
-                .build();
+        Film film = new Film("", "Film description", LocalDate.of(2024, 6, 26), 3600L);
 
         String content = serialize(film);
 
@@ -127,12 +107,7 @@ public class FilmControllerIntegrationTest extends AbstractApplicationMvcIntegra
     @Test
     @SneakyThrows
     void whenAddFilmDescriptionIsTooBigThenReturn400() {
-        Film film = Film.builder()
-                .name("Film")
-                .description("Film description".repeat(20))
-                .duration(3600L)
-                .releaseDate(LocalDate.of(2024, 6, 26))
-                .build();
+        Film film = new Film("Film", "Film description".repeat(20), LocalDate.of(2024, 6, 26), 3600L);
 
         String content = serialize(film);
 
@@ -149,12 +124,7 @@ public class FilmControllerIntegrationTest extends AbstractApplicationMvcIntegra
     @Test
     @SneakyThrows
     void whenAddFilmWrongReleaseDateThenReturn400() {
-        Film film = Film.builder()
-                .name("Film")
-                .description("Film description")
-                .duration(3600L)
-                .releaseDate(LocalDate.of(1800, 6, 26))
-                .build();
+        Film film = new Film("Film", "Film description", LocalDate.of(1800, 6, 26), 3600L);
 
         String content = serialize(film);
 
@@ -171,12 +141,7 @@ public class FilmControllerIntegrationTest extends AbstractApplicationMvcIntegra
     @Test
     @SneakyThrows
     void whenAddFilmDurationIsNegativeThenReturn400() {
-        Film film = Film.builder()
-                .name("Film")
-                .description("Film description")
-                .duration(-3600L)
-                .releaseDate(LocalDate.of(2024, 6, 26))
-                .build();
+        Film film = new Film("Film", "Film description", LocalDate.of(2024, 6, 26), -3600L);
 
         String content = serialize(film);
 
