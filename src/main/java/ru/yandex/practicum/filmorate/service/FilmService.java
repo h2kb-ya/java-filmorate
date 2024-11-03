@@ -3,7 +3,6 @@ package ru.yandex.practicum.filmorate.service;
 import java.util.Collection;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 
@@ -11,10 +10,12 @@ import ru.yandex.practicum.filmorate.storage.FilmStorage;
 public class FilmService {
 
     private final FilmStorage filmStorage;
+    private final UserService userService;
 
     @Autowired
-    public FilmService(FilmStorage filmStorage) {
+    public FilmService(FilmStorage filmStorage, UserService userService) {
         this.filmStorage = filmStorage;
+        this.userService = userService;
     }
 
     public Collection<Film> getFilms() {
@@ -26,31 +27,27 @@ public class FilmService {
     }
 
     public Film update(final Film film) {
-        return filmStorage.update(film);
+        if (filmExists(film.getId())) {
+            filmStorage.update(film);
+        }
+
+        return film;
     }
 
     public void like(final Integer id, final Integer userId) {
-        filmStorage.getFilm(id).ifPresentOrElse(
-                film -> {
-                    film.like(userId);
-                    filmStorage.update(film);
-                },
-                () -> {
-                    throw new NotFoundException("Фильм не найден");
-                }
-        );
+        userService.userExists(userId);
+
+        Film film = filmStorage.getFilm(id);
+        film.like(userId);
+        filmStorage.update(film);
     }
 
     public void dislike(Integer id, Integer userId) {
-        filmStorage.getFilm(id).ifPresentOrElse(
-                film -> {
-                    film.dislike(userId);
-                    filmStorage.update(film);
-                },
-                () -> {
-                    throw new NotFoundException("Фильм не найден");
-                }
-        );
+        userService.userExists(userId);
+
+        Film film = filmStorage.getFilm(id);
+        film.dislike(userId);
+        filmStorage.update(film);
     }
 
     public Collection<Film> getPopular(int count) {
@@ -59,5 +56,11 @@ public class FilmService {
         }
 
         return filmStorage.getPopular(count);
+    }
+
+    public boolean filmExists(final Integer id) {
+        Film film = filmStorage.getFilm(id);
+
+        return film != null;
     }
 }

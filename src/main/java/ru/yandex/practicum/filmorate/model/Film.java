@@ -4,16 +4,15 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 import java.time.LocalDate;
+import java.util.HashSet;
 import java.util.Set;
 import lombok.AccessLevel;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 import ru.yandex.practicum.filmorate.validation.ReleaseDateAfter1895;
 
 @Getter
 @Setter
-@Builder
 public class Film {
 
     private Integer id;
@@ -31,7 +30,7 @@ public class Film {
     private Long duration;
 
     @Setter(AccessLevel.NONE)
-    private Set<Integer> likes;
+    private Set<Integer> likes = new HashSet<>();
 
     public void like(Integer userId) {
         likes.add(userId);

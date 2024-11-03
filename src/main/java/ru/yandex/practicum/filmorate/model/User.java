@@ -15,7 +15,7 @@ import lombok.Setter;
 @Setter
 public class User {
 
-    private int id;
+    private Integer id;
 
     @NotBlank(message = "Email must not be blank")
     @Email(message = "Illegal format of email address")

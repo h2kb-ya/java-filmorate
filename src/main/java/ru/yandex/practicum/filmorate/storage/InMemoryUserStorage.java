@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
 
 @Slf4j
@@ -48,8 +49,14 @@ public class InMemoryUserStorage implements UserStorage {
     }
 
     @Override
-    public Optional<User> getUser(Integer userId) {
-        return Optional.ofNullable(users.get(userId));
+    public User getUser(Integer userId) {
+        User user = users.get(userId);
+
+        if (user == null) {
+            throw new NotFoundException("Пользователь c id " + userId + " не найден");
+        }
+
+        return user;
     }
 
     private int getNextId() {

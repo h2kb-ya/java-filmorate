@@ -5,7 +5,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
@@ -28,75 +27,55 @@ public class UserService {
     }
 
     public User update(final User user) {
-        userStorage.getUser(user.getId()).ifPresentOrElse(
-                currentUser -> {
-                    userStorage.update(user);
-                },
-                () -> {
-                    throw new NotFoundException("Пользователь c id " + user.getId() + " не найден");
-                }
-        );
+        if (userExists(user.getId())) {
+            userStorage.update(user);
+        }
 
         return user;
     }
 
     public void addFriend(final Integer userId, final Integer friendId) {
-        userStorage.getUser(userId).ifPresentOrElse(
-                user -> {
-                    user.addFriend(friendId);
-                    userStorage.update(user);
-                },
-                () -> {
-                    throw new NotFoundException("Пользователь не найден");
-                }
-        );
+        User user = userStorage.getUser(userId);
+        user.addFriend(friendId);
 
-        userStorage.getUser(friendId).ifPresentOrElse(
-                friend -> {
-                    friend.addFriend(userId);
-                    userStorage.update(friend);
-                },
-                () -> {
-                    throw new NotFoundException("Пользователь не найден");
-                }
-        );
+        User friend = userStorage.getUser(friendId);
+        friend.addFriend(userId);
+
+        userStorage.update(user);
+        userStorage.update(friend);
     }
 
     public void removeFriend(final Integer userId, final Integer friendId) {
-        userStorage.getUser(userId).ifPresentOrElse(
-                user -> {
-                    user.removeFriend(friendId);
-                    userStorage.update(user);
-                },
-                () -> {
-                    throw new NotFoundException("Пользователь не найден");
-                }
-        );
+        User user = userStorage.getUser(userId);
+        user.removeFriend(friendId);
 
-        userStorage.getUser(friendId).ifPresentOrElse(
-                friend -> {
-                    friend.removeFriend(userId);
-                    userStorage.update(friend);
-                },
-                () -> {
-                    throw new NotFoundException("Пользователь не найден");
-                }
-        );
+        User friend = userStorage.getUser(friendId);
+        friend.removeFriend(userId);
+
+        userStorage.update(user);
+        userStorage.update(friend);
     }
 
-    public Collection<Integer> gerFriends(final Integer userId) {
-        return userStorage.getUser(userId).orElseThrow(() -> new RuntimeException("TODO")).getFriends();
+    public Collection<User> getFriends(final Integer userId) {
+        return userStorage.getUser(userId).getFriends().stream()
+                .map(userStorage::getUser)
+                .collect(Collectors.toSet());
     }
 
-    public Collection<Integer> getCommonFriends(final Integer firstUserId, final Integer secondUserId) {
-        Set<Integer> firstUserFriends = userStorage.getUser(firstUserId)
-                .orElseThrow(() -> new NotFoundException("Пользователь не найден")).getFriends();
+    public Collection<User> getCommonFriends(final Integer firstUserId, final Integer secondUserId) {
+        Set<Integer> firstUserFriends = userStorage.getUser(firstUserId).getFriends();
 
-        Set<Integer> secondUserFriends = userStorage.getUser(secondUserId)
-                .orElseThrow(() -> new NotFoundException("Пользователь не найден")).getFriends();
+        Set<Integer> secondUserFriends = userStorage.getUser(secondUserId).getFriends();
 
         return firstUserFriends.stream()
                 .filter(secondUserFriends::contains)
+                .map(userStorage::getUser)
                 .collect(Collectors.toSet());
+    }
+
+    public boolean userExists(final Integer userId) {
+        User user = userStorage.getUser(userId);
+
+        return user != null;
     }
 }

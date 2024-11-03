@@ -16,5 +16,5 @@ public interface UserStorage {
 
     void clearUsers();
 
-    Optional<User> getUser(Integer userId);
+    User getUser(Integer userId);
 }

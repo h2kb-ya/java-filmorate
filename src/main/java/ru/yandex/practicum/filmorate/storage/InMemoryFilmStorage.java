@@ -7,9 +7,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
-import org.springframework.web.server.ResponseStatusException;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 
 @Slf4j
@@ -30,11 +29,6 @@ public class InMemoryFilmStorage implements FilmStorage {
 
     @Override
     public Film update(final Film film) {
-        if (!films.containsKey(film.getId())) {
-            log.warn("Film not found: {}", film.getId());
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Film not found");
-        }
-
         log.info("Updating film: {}", film);
         films.put(film.getId(), film);
 
@@ -52,15 +46,21 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
-    public Optional<Film> getFilm(int id) {
-        return Optional.of(films.get(id));
+    public Film getFilm(int id) {
+        Film film = films.get(id);
+
+        if (film == null) {
+            throw new NotFoundException("Фильм c id " + id + " не найден");
+        }
+
+        return film;
     }
 
     @Override
     public Collection<Film> getPopular(int count) {
         return films.values()
                 .stream()
-                .sorted(Comparator.comparingInt(film -> film.getLikes().size()))
+                .sorted(Comparator.comparingInt((Film film) -> film.getLikes().size()).reversed())
                 .limit(count)
                 .collect(Collectors.toList());
     }

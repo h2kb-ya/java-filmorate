@@ -58,12 +58,12 @@ public class UserController {
     }
 
     @GetMapping("/{id}/friends")
-    public Collection<Integer> getFriends(@PathVariable(name = "id") @Positive final Integer userId) {
-        return userService.gerFriends(userId);
+    public Collection<User> getFriends(@PathVariable(name = "id") @Positive final Integer userId) {
+        return userService.getFriends(userId);
     }
 
     @GetMapping("/{id}/friends/common/{otherId}")
-    public Collection<Integer> getCommonFriends(
+    public Collection<User> getCommonFriends(
             @PathVariable(name = "id") @Positive final Integer firstUserId,
             @PathVariable(name = "otherId") @Positive final Integer secondUserId
     ) {
