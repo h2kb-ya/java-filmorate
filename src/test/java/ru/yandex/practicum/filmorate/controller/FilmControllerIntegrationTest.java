@@ -271,8 +271,8 @@ public class FilmControllerIntegrationTest extends AbstractApplicationMvcIntegra
                 .andExpect(status().isOk())
                 .andReturn();
 
-        List<Film> WithDefaultCount = deserializeList(resultWithDefaultCount, Film.class);
-        assertEquals(10, WithDefaultCount.size());
+        List<Film> filmsWithDefaultCount = deserializeList(resultWithDefaultCount, Film.class);
+        assertEquals(10, filmsWithDefaultCount.size());
 
         MvcResult resultWithCustomCount = mockMvc.perform(get("/films/popular")
                         .param("count", "3")
@@ -280,8 +280,8 @@ public class FilmControllerIntegrationTest extends AbstractApplicationMvcIntegra
                 .andExpect(status().isOk())
                 .andReturn();
 
-        List<Film> WithCustomCount = deserializeList(resultWithCustomCount, Film.class);
-        assertEquals(3, WithCustomCount.size());
+        List<Film> filmsWithCustomCount = deserializeList(resultWithCustomCount, Film.class);
+        assertEquals(3, filmsWithCustomCount.size());
     }
 
     private static Integer getRandomElement(List<Integer> list) {
