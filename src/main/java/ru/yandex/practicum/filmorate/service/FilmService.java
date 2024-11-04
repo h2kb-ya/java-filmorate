@@ -50,8 +50,8 @@ public class FilmService {
         filmStorage.update(film);
     }
 
-    public Collection<Film> getPopular(int count) {
-        if (count == 0) {
+    public Collection<Film> getPopular(Integer count) {
+        if (count == null || count == 0) {
             count = 10;
         }
 

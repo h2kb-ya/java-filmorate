@@ -38,6 +38,11 @@ public class InMemoryUserStorage implements UserStorage {
     }
 
     @Override
+    public void deleteAllUsers() {
+        users.clear();
+    }
+
+    @Override
     public Collection<User> getUsers() {
         return users.values();
     }

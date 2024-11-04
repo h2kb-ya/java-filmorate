@@ -22,9 +22,9 @@ public class FilmorateExceptionHandler {
         return new ErrorResponse("Ошибка валидации", e.getMessage());
     }
 
-//    @ExceptionHandler
-//    @ResponseStatus(HttpStatus.BAD_GATEWAY)
-//    public ErrorResponse handleException(final Exception e) {
-//        return new ErrorResponse("Неизвестная ошибка", e.getMessage());
-//    }
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.BAD_GATEWAY)
+    public ErrorResponse handleException(final Exception e) {
+        return new ErrorResponse("Неизвестная ошибка", e.getMessage());
+    }
 }
