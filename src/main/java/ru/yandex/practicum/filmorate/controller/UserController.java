@@ -13,32 +13,32 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.service.UserService;
+import ru.yandex.practicum.filmorate.service.UserServiceImpl;
 
 @RestController
 @RequestMapping("/users")
 public class UserController {
 
-    private final UserService userService;
+    private final UserServiceImpl userServiceImpl;
 
     @Autowired
-    public UserController(UserService userService) {
-        this.userService = userService;
+    public UserController(UserServiceImpl userServiceImpl) {
+        this.userServiceImpl = userServiceImpl;
     }
 
     @GetMapping
     public Collection<User> getUsers() {
-        return userService.getUsers();
+        return userServiceImpl.getUsers();
     }
 
     @PostMapping
     public User create(@RequestBody @Valid final User user) {
-        return userService.create(user);
+        return userServiceImpl.create(user);
     }
 
     @PutMapping
     public User update(@RequestBody @Valid final User user) {
-        return userService.update(user);
+        return userServiceImpl.update(user);
     }
 
     @PutMapping("/{id}/friends/{friendId}")
@@ -46,7 +46,7 @@ public class UserController {
             @PathVariable(name = "id") @Positive final Integer userId,
             @PathVariable @Positive final Integer friendId
     ) {
-        userService.addFriend(userId, friendId);
+        userServiceImpl.addFriend(userId, friendId);
     }
 
     @DeleteMapping("/{id}/friends/{friendId}")
@@ -54,12 +54,12 @@ public class UserController {
             @PathVariable(name = "id") @Positive final Integer userId,
             @PathVariable @Positive final Integer friendId
     ) {
-        userService.removeFriend(userId, friendId);
+        userServiceImpl.removeFriend(userId, friendId);
     }
 
     @GetMapping("/{id}/friends")
     public Collection<User> getFriends(@PathVariable(name = "id") @Positive final Integer userId) {
-        return userService.getFriends(userId);
+        return userServiceImpl.getFriends(userId);
     }
 
     @GetMapping("/{id}/friends/common/{otherId}")
@@ -67,6 +67,6 @@ public class UserController {
             @PathVariable(name = "id") @Positive final Integer firstUserId,
             @PathVariable(name = "otherId") @Positive final Integer secondUserId
     ) {
-        return userService.getCommonFriends(firstUserId, secondUserId);
+        return userServiceImpl.getCommonFriends(firstUserId, secondUserId);
     }
 }

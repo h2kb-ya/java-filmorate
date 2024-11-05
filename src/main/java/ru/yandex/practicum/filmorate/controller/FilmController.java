@@ -14,32 +14,34 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.service.FilmService;
+import ru.yandex.practicum.filmorate.service.FilmServiceImpl;
+
+import static ru.yandex.practicum.filmorate.util.FilmorateConstants.DEFAULT_COUNT_VALUE_FOR_GETTING_POPULAR_FILMS;
 
 @RestController
 @RequestMapping("/films")
 public class FilmController {
 
-    private final FilmService filmService;
+    private final FilmServiceImpl filmServiceImpl;
 
     @Autowired
-    public FilmController(FilmService filmService) {
-        this.filmService = filmService;
+    public FilmController(FilmServiceImpl filmServiceImpl) {
+        this.filmServiceImpl = filmServiceImpl;
     }
 
     @GetMapping
     public Collection<Film> getFilms() {
-        return filmService.getFilms();
+        return filmServiceImpl.getFilms();
     }
 
     @PostMapping
     public Film create(@RequestBody @Valid final Film film) {
-        return filmService.create(film);
+        return filmServiceImpl.create(film);
     }
 
     @PutMapping
     public Film update(@RequestBody @Valid final Film film) {
-        return filmService.update(film);
+        return filmServiceImpl.update(film);
     }
 
     @PutMapping("/{id}/like/{userId}")
@@ -47,7 +49,7 @@ public class FilmController {
             @PathVariable @Positive final Integer id,
             @PathVariable @Positive final Integer userId
     ) {
-        filmService.like(id, userId);
+        filmServiceImpl.like(id, userId);
     }
 
     @DeleteMapping("/{id}/like/{userId}")
@@ -55,11 +57,13 @@ public class FilmController {
             @PathVariable @Positive final Integer id,
             @PathVariable @Positive final Integer userId
     ) {
-        filmService.dislike(id, userId);
+        filmServiceImpl.dislike(id, userId);
     }
 
     @GetMapping("/popular")
-    public Collection<Film> getPopular(@RequestParam(required = false) @Positive Integer count) {
-        return filmService.getPopular(count);
+    public Collection<Film> getPopular(
+            @RequestParam(required = false, defaultValue = DEFAULT_COUNT_VALUE_FOR_GETTING_POPULAR_FILMS) @Positive Integer count
+    ) {
+        return filmServiceImpl.getPopular(count);
     }
 }

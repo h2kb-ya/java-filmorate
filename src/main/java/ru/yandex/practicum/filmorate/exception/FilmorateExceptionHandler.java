@@ -23,7 +23,7 @@ public class FilmorateExceptionHandler {
     }
 
     @ExceptionHandler
-    @ResponseStatus(HttpStatus.BAD_GATEWAY)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ErrorResponse handleException(final Exception e) {
         return new ErrorResponse("Неизвестная ошибка", e.getMessage());
     }

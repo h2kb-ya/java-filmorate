@@ -13,7 +13,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MvcResult;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.service.UserService;
+import ru.yandex.practicum.filmorate.service.UserServiceImpl;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
@@ -40,7 +40,7 @@ public class FilmControllerIntegrationTest extends AbstractApplicationMvcIntegra
     private UserStorage userStorage;
 
     @Autowired
-    UserService userService;
+    UserServiceImpl userServiceImpl;
 
     @BeforeEach
     public void setUp() {
@@ -176,7 +176,7 @@ public class FilmControllerIntegrationTest extends AbstractApplicationMvcIntegra
         assertTrue(filmController.getFilms().isEmpty());
 
         User user = new User("user@yandex.ru", "user", "User", LocalDate.of(1985, 1, 1));
-        User savedUser = userService.create(user);
+        User savedUser = userServiceImpl.create(user);
         Film film = new Film("Film", "Film description", LocalDate.of(2024, 6, 26), -3600L);
         Film savedFilm = filmController.create(film);
 
@@ -195,7 +195,7 @@ public class FilmControllerIntegrationTest extends AbstractApplicationMvcIntegra
         assertTrue(filmController.getFilms().isEmpty());
 
         User user = new User("user@yandex.ru", "user", "User", LocalDate.of(1985, 1, 1));
-        User savedUser = userService.create(user);
+        User savedUser = userServiceImpl.create(user);
         int badFilmId = 999;
 
         mockMvc.perform(put("/films/{id}/like/{userId}", badFilmId, savedUser.getId())
@@ -227,7 +227,7 @@ public class FilmControllerIntegrationTest extends AbstractApplicationMvcIntegra
         assertTrue(filmController.getFilms().isEmpty());
 
         User user = new User("user@yandex.ru", "user", "User", LocalDate.of(1985, 1, 1));
-        User savedUser = userService.create(user);
+        User savedUser = userServiceImpl.create(user);
         Film film = new Film("Film", "Film description", LocalDate.of(2024, 6, 26), -3600L);
         Film savedFilm = filmController.create(film);
 
@@ -252,11 +252,11 @@ public class FilmControllerIntegrationTest extends AbstractApplicationMvcIntegra
         assertTrue(filmController.getFilms().isEmpty());
 
         User user = new User("user@yandex.ru", "user", "User", LocalDate.of(1985, 1, 1));
-        IntStream.range(0, 20).forEach(i -> userService.create(user));
+        IntStream.range(0, 20).forEach(i -> userServiceImpl.create(user));
         Film film = new Film("Film", "Film description", LocalDate.of(2024, 6, 26), -3600L);
         IntStream.range(0, 20).forEach(i -> filmController.create(film));
 
-        List<Integer> userIds = userService.getUsers().stream()
+        List<Integer> userIds = userServiceImpl.getUsers().stream()
                 .map(User::getId)
                 .toList();
 
