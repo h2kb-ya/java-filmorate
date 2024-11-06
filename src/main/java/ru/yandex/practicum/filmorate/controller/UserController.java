@@ -1,67 +1,72 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Positive;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.server.ResponseStatusException;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.service.UserServiceImpl;
 
-@Slf4j
 @RestController
 @RequestMapping("/users")
 public class UserController {
 
-    private final Map<Integer, User> users = new HashMap<>();
+    private final UserServiceImpl userServiceImpl;
+
+    @Autowired
+    public UserController(UserServiceImpl userServiceImpl) {
+        this.userServiceImpl = userServiceImpl;
+    }
 
     @GetMapping
     public Collection<User> getUsers() {
-        return users.values();
+        return userServiceImpl.getUsers();
     }
 
     @PostMapping
-    public User create(@RequestBody @Valid User user) {
-        user.setId(getNextId());
-
-        log.info("Creating new user: {}", user);
-        users.put(user.getId(), user);
-
-        return user;
+    public User create(@RequestBody @Valid final User user) {
+        return userServiceImpl.create(user);
     }
 
     @PutMapping
-    public User update(@RequestBody @Valid User user) {
-        log.info("Updating user: {}", user);
-
-        if (!users.containsKey(user.getId())) {
-            log.warn("User not found: {}", user.getId());
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found");
-        }
-
-        users.put(user.getId(), user);
-
-        return user;
+    public User update(@RequestBody @Valid final User user) {
+        return userServiceImpl.update(user);
     }
 
-    public void clearUsers() {
-        users.clear();
+    @PutMapping("/{id}/friends/{friendId}")
+    public void addFriend(
+            @PathVariable(name = "id") @Positive final Integer userId,
+            @PathVariable @Positive final Integer friendId
+    ) {
+        userServiceImpl.addFriend(userId, friendId);
     }
 
-    private int getNextId() {
-        int currentMaxId = users.keySet()
-                .stream()
-                .mapToInt(id -> id)
-                .max()
-                .orElse(0);
+    @DeleteMapping("/{id}/friends/{friendId}")
+    public void removeFriend(
+            @PathVariable(name = "id") @Positive final Integer userId,
+            @PathVariable @Positive final Integer friendId
+    ) {
+        userServiceImpl.removeFriend(userId, friendId);
+    }
 
-        return ++currentMaxId;
+    @GetMapping("/{id}/friends")
+    public Collection<User> getFriends(@PathVariable(name = "id") @Positive final Integer userId) {
+        return userServiceImpl.getFriends(userId);
+    }
+
+    @GetMapping("/{id}/friends/common/{otherId}")
+    public Collection<User> getCommonFriends(
+            @PathVariable(name = "id") @Positive final Integer firstUserId,
+            @PathVariable(name = "otherId") @Positive final Integer secondUserId
+    ) {
+        return userServiceImpl.getCommonFriends(firstUserId, secondUserId);
     }
 }
