@@ -1,7 +1,7 @@
 # **java-filmorate**
 
 ### Database schema
-![Database Schema](src/main/resources/static/images/dbDiagram.png)
+![Database Schema](docs/images/dbDiagram.png)
 ```dbml
 // Docs: https://dbml.dbdiagram.io/docs
 
