@@ -157,6 +157,15 @@ FROM users u
          JOIN likes l ON u.id = l.user_id
 WHERE l.film_id = 1;
 ```
+#### d. Получение N самых популярных фильмов
+```sql
+SELECT f.id, f.name, COUNT(l.user_id) AS like_count
+FROM films f
+         LEFT JOIN likes l ON f.id = l.film_id
+GROUP BY f.id
+ORDER BY like_count DESC
+    LIMIT N;
+```
 ### 6. Операции с друзьями (Friendships)
 #### a. Отправить запрос на добавление в друзья
 ```sql
