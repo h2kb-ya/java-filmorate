@@ -32,6 +32,10 @@ public class Film {
     @Setter(AccessLevel.NONE)
     private Set<Integer> likes = new HashSet<>();
 
+    private Set<Genre> genres = new HashSet<>();
+
+    private MpaRating mpaRating;
+
     public void like(Integer userId) {
         likes.add(userId);
     }
