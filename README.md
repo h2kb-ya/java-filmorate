@@ -64,3 +64,120 @@ Ref: likes.user_id > users.id [on delete cascade]
 Ref: friendships.user_id > users.id [on delete cascade]
 Ref: friendships.friend_id > users.id [on delete cascade]
 ```
+## Основные операции с базой данных
+### 1. Операции с фильмами (Films)
+#### a. Создание нового фильма
+```sql
+INSERT INTO films (name, description, release_date, duration, mpa_rating_id)
+VALUES ('Inception', 'A mind-bending thriller', '2010-07-16', 148, 1);
+```
+#### b. Получение списка всех фильмов
+```sql
+SELECT * FROM films;
+```
+#### c. Получение информации о фильме по ID
+```sql
+SELECT * FROM films WHERE id = 1;
+```
+#### d. Обновление информации о фильме
+```sql
+UPDATE films
+SET description = 'A mind-bending thriller with new plot twists'
+WHERE id = 1;
+```
+#### e. Удаление фильма
+```sql
+DELETE FROM films WHERE id = 1;
+```
+### 2. Операции с пользователями (Users)
+#### a. Создание нового пользователя
+```sql
+INSERT INTO users (email, login, name, birthday)
+VALUES ('johndoe@example.com', 'johndoe', 'John Doe', '1990-05-15');
+```
+#### b. Получение списка всех пользователей
+```sql
+SELECT * FROM users;
+```
+#### c. Получение информации о пользователе по ID
+```sql
+SELECT * FROM users WHERE id = 1;
+```
+#### d. Обновление информации о пользователе
+```sql
+UPDATE users
+SET name = 'Johnathan Doe', birthday = '1991-01-01'
+WHERE id = 1;
+```
+#### e. Удаление пользователя
+```sql
+DELETE FROM users WHERE id = 1;
+```
+### 3. Операции с жанрами (Genres)
+#### a. Добавление нового жанра
+```sql
+INSERT INTO genres (name)
+VALUES ('Comedy');
+```
+#### b. Получение списка всех жанров
+```sql
+SELECT * FROM genres;
+```
+#### c. Удаление жанра по ID
+```sql
+SELECT * FROM genres WHERE id = 1;
+```
+### 4. Операции с фильмами и жанрами (Film Genres)
+#### a. Добавление жанра для фильма
+```sql
+INSERT INTO film_genres (film_id, genre_id)
+VALUES (1, 2);  -- где 1 — это id фильма, а 2 — id жанра
+```
+#### b. Получение жанров для фильма
+```sql
+SELECT g.name
+FROM genres g
+         JOIN film_genres fg ON g.id = fg.genre_id
+WHERE fg.film_id = 1;
+```
+### 5. Операции с лайками (Likes)
+#### a. Добавление лайка
+```sql
+INSERT INTO likes (film_id, user_id)
+VALUES (1, 1);  -- где 1 — это id фильма и id пользователя
+```
+#### b. Удаление лайка
+```sql
+DELETE FROM likes WHERE film_id = 1 AND user_id = 1;
+```
+#### c. Получение лайков для фильма
+```sql
+SELECT u.name
+FROM users u
+         JOIN likes l ON u.id = l.user_id
+WHERE l.film_id = 1;
+```
+### 6. Операции с друзьями (Friendships)
+#### a. Отправить запрос на добавление в друзья
+```sql
+INSERT INTO friendships (user_id, friend_id, status)
+VALUES (1, 2, 'pending');  -- где 1 — это id пользователя, 2 — id друга
+```
+#### b. Подтвердить запрос в друзья
+```sql
+UPDATE friendships
+SET status = 'confirmed'
+WHERE user_id = 1 AND friend_id = 2;
+```
+#### c. Удаление из друзей
+```sql
+DELETE FROM friendships
+WHERE user_id = 1 AND friend_id = 2;
+```
+#### d. Получить список друзей пользователя
+```sql
+SELECT u.name
+FROM users u
+         JOIN friendships f ON u.id = f.friend_id
+WHERE f.user_id = 1 AND f.status = 'confirmed';
+```
