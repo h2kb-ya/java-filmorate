@@ -23,7 +23,7 @@ Table users {
 
 Table mpa_ratings {
   id SERIAL [primary key]
-  rating varchar(5) [unique, not null]
+  name varchar(5) [unique, not null]
 }
 
 Table genres {
