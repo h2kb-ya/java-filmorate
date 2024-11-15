@@ -2,9 +2,8 @@
 
 ### Database schema
 ![Database Schema](docs/images/dbDiagram.png)
-```dbml
-// Docs: https://dbml.dbdiagram.io/docs
-
+<details>
+<summary></summary>
 Table films {
   id SERIAL [primary key]
   name varchar(255) [not null]
@@ -63,7 +62,8 @@ Ref: likes.film_id > films.id [on delete cascade]
 Ref: likes.user_id > users.id [on delete cascade]
 Ref: friendships.user_id > users.id [on delete cascade]
 Ref: friendships.friend_id > users.id [on delete cascade]
-```
+</details>
+
 ## Основные операции с базой данных
 ### 1. Операции с фильмами (Films)
 #### a. Создание нового фильма
