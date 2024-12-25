@@ -39,7 +39,7 @@ Table film_genres {
   }
 }
 
-Table likes {
+Table film_likes {
   film_id integer
   user_id integer
   indexes {
@@ -58,8 +58,8 @@ Table friendships {
 
 Ref: film_genres.film_id > films.id [on delete cascade]
 Ref: film_genres.genre_id > genres.id [on delete cascade]
-Ref: likes.film_id > films.id [on delete cascade]
-Ref: likes.user_id > users.id [on delete cascade]
+Ref: film_likes.film_id > films.id [on delete cascade]
+Ref: film_likes.user_id > users.id [on delete cascade]
 Ref: friendships.user_id > users.id [on delete cascade]
 Ref: friendships.friend_id > users.id [on delete cascade]
 </details>
@@ -140,28 +140,28 @@ FROM genres g
          JOIN film_genres fg ON g.id = fg.genre_id
 WHERE fg.film_id = 1;
 ```
-### 5. Операции с лайками (Likes)
+### 5. Операции с лайками (Film likes)
 #### a. Добавление лайка
 ```sql
-INSERT INTO likes (film_id, user_id)
+INSERT INTO film_likes (film_id, user_id)
 VALUES (1, 1);  -- где 1 — это id фильма и id пользователя
 ```
 #### b. Удаление лайка
 ```sql
-DELETE FROM likes WHERE film_id = 1 AND user_id = 1;
+DELETE FROM film_likes WHERE film_id = 1 AND user_id = 1;
 ```
 #### c. Получение лайков для фильма
 ```sql
 SELECT u.name
 FROM users u
-         JOIN likes l ON u.id = l.user_id
+         JOIN film_likes l ON u.id = l.user_id
 WHERE l.film_id = 1;
 ```
 #### d. Получение N самых популярных фильмов
 ```sql
 SELECT f.id, f.name, COUNT(l.user_id) AS like_count
 FROM films f
-         LEFT JOIN likes l ON f.id = l.film_id
+         LEFT JOIN film_likes l ON f.id = l.film_id
 GROUP BY f.id
 ORDER BY like_count DESC
     LIMIT N;

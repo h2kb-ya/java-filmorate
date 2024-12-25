@@ -11,7 +11,7 @@ import lombok.ToString;
 @AllArgsConstructor
 @ToString
 @EqualsAndHashCode
-public class Genre {
+public class Mpa {
 
     private Integer id;
     private String name;

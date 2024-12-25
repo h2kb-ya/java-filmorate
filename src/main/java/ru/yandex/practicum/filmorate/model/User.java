@@ -5,14 +5,18 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.PastOrPresent;
 import jakarta.validation.constraints.Pattern;
 import java.time.LocalDate;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.HashMap;
+import java.util.Map;
 import lombok.AccessLevel;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 
 @Getter
 @Setter
+@EqualsAndHashCode
+@ToString
 public class User {
 
     private Integer id;
@@ -31,9 +35,6 @@ public class User {
     @PastOrPresent(message = "Birthday date must not be in the future")
     private LocalDate birthday;
 
-    @Setter(AccessLevel.NONE)
-    private Set<Integer> friends = new HashSet<>();
-
     public void setName(String name) {
         if (name == null || name.isBlank()) {
             this.name = this.login;
@@ -42,18 +43,20 @@ public class User {
         }
     }
 
-    public void addFriend(Integer userId) {
-        friends.add(userId);
-    }
-
-    public void removeFriend(Integer userId) {
-        friends.remove(userId);
-    }
-
     public User(String email, String login, String name, LocalDate birthday) {
         this.email = email;
         this.login = login;
         setName(name);
         this.birthday = birthday;
+    }
+
+    public Map<String, Object> toMap() {
+        Map<String, Object> values = new HashMap<>();
+        values.put("email", getEmail());
+        values.put("login", getLogin());
+        values.put("name", getName());
+        values.put("birthday", getBirthday());
+
+        return values;
     }
 }

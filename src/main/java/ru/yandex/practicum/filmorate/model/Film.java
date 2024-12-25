@@ -4,15 +4,20 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
-import lombok.AccessLevel;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 import ru.yandex.practicum.filmorate.validation.ReleaseDateAfter1895;
 
 @Getter
 @Setter
+@EqualsAndHashCode
+@ToString
 public class Film {
 
     private Integer id;
@@ -29,25 +34,27 @@ public class Film {
     @Positive(message = "Duration of film must be positive")
     private Long duration;
 
-    @Setter(AccessLevel.NONE)
-    private Set<Integer> likes = new HashSet<>();
+    private int likes;
 
     private Set<Genre> genres = new HashSet<>();
 
-    private MpaRating mpaRating;
-
-    public void like(Integer userId) {
-        likes.add(userId);
-    }
-
-    public void dislike(Integer userId) {
-        likes.remove(userId);
-    }
+    private Mpa mpa;
 
     public Film(String name, String description, LocalDate releaseDate, Long duration) {
         this.name = name;
         this.description = description;
         this.releaseDate = releaseDate;
         this.duration = duration;
+    }
+
+    public Map<String, Object> toMap() {
+        Map<String, Object> values = new HashMap<>();
+        values.put("name", getName());
+        values.put("description", getDescription());
+        values.put("release_date", getReleaseDate());
+        values.put("duration", getDuration());
+        values.put("mpa_rating_id", getMpa().getId());
+
+        return values;
     }
 }

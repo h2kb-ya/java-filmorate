@@ -1,35 +1,43 @@
 package ru.yandex.practicum.filmorate.service;
 
 import java.util.Collection;
-import java.util.Set;
 import java.util.stream.Collectors;
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.storage.UserStorage;
+import ru.yandex.practicum.filmorate.repository.FriendshipRepository;
+import ru.yandex.practicum.filmorate.repository.UserRepository;
 
 @Service
+@RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
 
-    private final UserStorage userStorage;
-
-    public UserServiceImpl(UserStorage userStorage) {
-        this.userStorage = userStorage;
-    }
+    @Qualifier("userRepositoryImpl")
+    private final UserRepository userRepository;
+    private final FriendshipRepository friendshipRepository;
 
     @Override
     public Collection<User> getUsers() {
-        return userStorage.getUsers();
+        return userRepository.findAll();
+    }
+
+    @Override
+    public User get(Integer userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException("Пользователь c id " + userId + " не найден."));
     }
 
     @Override
     public User create(final User user) {
-        return userStorage.create(user);
+        return userRepository.create(user);
     }
 
     @Override
     public User update(final User user) {
         if (userExists(user.getId())) {
-            userStorage.update(user);
+            userRepository.update(user);
         }
 
         return user;
@@ -37,50 +45,44 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void addFriend(final Integer userId, final Integer friendId) {
-        User user = userStorage.getUser(userId);
-        user.addFriend(friendId);
-
-        User friend = userStorage.getUser(friendId);
-        friend.addFriend(userId);
-
-        userStorage.update(user);
-        userStorage.update(friend);
+        if (userExists(userId) && userExists(friendId)) {
+            friendshipRepository.addFriend(userId, friendId);
+        }
     }
 
     @Override
     public void removeFriend(final Integer userId, final Integer friendId) {
-        User user = userStorage.getUser(userId);
-        user.removeFriend(friendId);
-
-        User friend = userStorage.getUser(friendId);
-        friend.removeFriend(userId);
-
-        userStorage.update(user);
-        userStorage.update(friend);
+        if (userExists(userId) && userExists(friendId)) {
+            friendshipRepository.removeFriend(userId, friendId);
+        }
     }
 
     @Override
     public Collection<User> getFriends(final Integer userId) {
-        return userStorage.getUser(userId).getFriends().stream()
-                .map(userStorage::getUser)
+        userExists(userId);
+
+        return friendshipRepository.getFriends(userId).stream()
+                .map(this::get)
                 .collect(Collectors.toSet());
     }
 
     @Override
     public Collection<User> getCommonFriends(final Integer firstUserId, final Integer secondUserId) {
-        Set<Integer> firstUserFriends = userStorage.getUser(firstUserId).getFriends();
+        userExists(firstUserId);
+        userExists(secondUserId);
+        Collection<Integer> firstUserFriends = friendshipRepository.getFriends(firstUserId);
 
-        Set<Integer> secondUserFriends = userStorage.getUser(secondUserId).getFriends();
+        Collection<Integer> secondUserFriends = friendshipRepository.getFriends(secondUserId);
 
         return firstUserFriends.stream()
                 .filter(secondUserFriends::contains)
-                .map(userStorage::getUser)
+                .map(this::get)
                 .collect(Collectors.toSet());
     }
 
     @Override
     public boolean userExists(final Integer userId) {
-        User user = userStorage.getUser(userId);
+        User user = get(userId);
 
         return user != null;
     }

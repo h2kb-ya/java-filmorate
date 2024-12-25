@@ -1,58 +1,97 @@
 package ru.yandex.practicum.filmorate.service;
 
 import java.util.Collection;
+import java.util.List;
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.exception.ForeignKeyViolationException;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.storage.FilmStorage;
+import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.repository.FilmRepository;
 
 import static ru.yandex.practicum.filmorate.util.FilmorateConstants.DEFAULT_COUNT_VALUE_FOR_GETTING_POPULAR_FILMS;
 
 @Service
+@RequiredArgsConstructor(onConstructor_ = @Autowired)
 public class FilmServiceImpl implements FilmService {
 
-    private final FilmStorage filmStorage;
-    private final UserServiceImpl userServiceImpl;
-
-    public FilmServiceImpl(FilmStorage filmStorage, UserServiceImpl userServiceImpl) {
-        this.filmStorage = filmStorage;
-        this.userServiceImpl = userServiceImpl;
-    }
+    @Qualifier("filmRepositoryImpl")
+    private final FilmRepository filmRepository;
+    private final UserService userService;
+    private final MpaService mpaService;
+    private final GenreService genreService;
+    private final FilmLikesService filmLikesService;
 
     @Override
     public Collection<Film> getFilms() {
-        return filmStorage.getFilms();
+        return filmRepository.findAll();
+    }
+
+    @Override
+    public Film getFilm(Integer id) {
+        return filmRepository.findById(id).orElseThrow(() -> new NotFoundException("Фильм c id " + id + " не найден."));
     }
 
     @Override
     public Film create(final Film film) {
-        return filmStorage.create(film);
+        try {
+            mpaService.getRating(film.getMpa().getId());
+        } catch (NotFoundException e) {
+            throw new ForeignKeyViolationException("Нарушение целостности внешних ключей: " + e.getMessage());
+        }
+
+        film.getGenres().stream()
+                .map(Genre::getId)
+                .forEach(genreId -> {
+                    try {
+                        genreService.getGenre(genreId);
+                    } catch (NotFoundException e) {
+                        throw new ForeignKeyViolationException(
+                                "Нарушение целостности внешних ключей: " + e.getMessage());
+                    }
+                });
+
+        return filmRepository.create(film);
     }
 
     @Override
     public Film update(final Film film) {
-        if (filmExists(film.getId())) {
-            filmStorage.update(film);
-        }
+        filmRepository.findById(film.getId())
+                .orElseThrow(() -> new NotFoundException("Фильм c id " + film.getId() + " не найден."));
+        mpaService.getRating(film.getMpa().getId());
+        List<Integer> genreIds = film.getGenres().stream()
+                .map(Genre::getId)
+                .toList();
+
+        genreIds.forEach(genreService::getGenre);
+
+        filmRepository.update(film);
 
         return film;
     }
 
     @Override
     public void like(final Integer id, final Integer userId) {
-        userServiceImpl.userExists(userId);
+        User user = userService.get(userId);
 
-        Film film = filmStorage.getFilm(id);
-        film.like(userId);
-        filmStorage.update(film);
+        Film film = filmRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Фильм c id " + id + " не найден."));
+
+        filmLikesService.like(film, user);
     }
 
     @Override
     public void dislike(Integer id, Integer userId) {
-        userServiceImpl.userExists(userId);
+        User user = userService.get(userId);
 
-        Film film = filmStorage.getFilm(id);
-        film.dislike(userId);
-        filmStorage.update(film);
+        Film film = filmRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Фильм c id " + id + " не найден."));
+
+        filmLikesService.dislike(film, user);
     }
 
     @Override
@@ -61,13 +100,6 @@ public class FilmServiceImpl implements FilmService {
             count = Integer.valueOf(DEFAULT_COUNT_VALUE_FOR_GETTING_POPULAR_FILMS);
         }
 
-        return filmStorage.getPopular(count);
-    }
-
-    @Override
-    public boolean filmExists(final Integer id) {
-        Film film = filmStorage.getFilm(id);
-
-        return film != null;
+        return filmRepository.getPopular(count);
     }
 }

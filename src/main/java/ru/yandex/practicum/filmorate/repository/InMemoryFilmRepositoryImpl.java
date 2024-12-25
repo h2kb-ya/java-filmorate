@@ -1,18 +1,18 @@
-package ru.yandex.practicum.filmorate.storage;
+package ru.yandex.practicum.filmorate.repository;
 
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
-import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 
 @Slf4j
 @Component
-public class InMemoryFilmStorage implements FilmStorage {
+public class InMemoryFilmRepositoryImpl implements FilmRepository {
 
     private final Map<Integer, Film> films = new HashMap<>();
 
@@ -40,32 +40,26 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
-    public Collection<Film> getFilms() {
+    public Collection<Film> findAll() {
         return films.values();
     }
 
     @Override
-    public Film getFilm(int id) {
-        Film film = films.get(id);
-
-        if (film == null) {
-            throw new NotFoundException("Фильм c id " + id + " не найден");
-        }
-
-        return film;
+    public Optional<Film> findById(int id) {
+        return Optional.ofNullable(films.get(id));
     }
 
     @Override
     public Collection<Film> getPopular(int count) {
         return films.values()
                 .stream()
-                .sorted(Comparator.comparingInt((Film film) -> film.getLikes().size()).reversed())
+                .sorted(Comparator.comparingInt(Film::getLikes).reversed())
                 .limit(count)
                 .collect(Collectors.toList());
     }
 
     @Override
-    public void deleteAllFilms() {
+    public void deleteAll() {
         films.clear();
     }
 
