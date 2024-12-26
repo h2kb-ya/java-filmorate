@@ -7,6 +7,8 @@ public interface FilmService {
 
     Collection<Film> getFilms();
 
+    Film getFilm(Integer id);
+
     Film create(Film film);
 
     Film update(Film film);
@@ -16,6 +18,4 @@ public interface FilmService {
     void dislike(Integer id, Integer userId);
 
     Collection<Film> getPopular(Integer count);
-
-    boolean filmExists(Integer id);
 }

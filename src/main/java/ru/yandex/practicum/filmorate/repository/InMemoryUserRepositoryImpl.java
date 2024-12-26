@@ -1,8 +1,9 @@
-package ru.yandex.practicum.filmorate.storage;
+package ru.yandex.practicum.filmorate.repository;
 
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
@@ -10,7 +11,7 @@ import ru.yandex.practicum.filmorate.model.User;
 
 @Slf4j
 @Component
-public class InMemoryUserStorage implements UserStorage {
+public class InMemoryUserRepositoryImpl implements UserRepository {
 
     private final Map<Integer, User> users = new HashMap<>();
 
@@ -38,29 +39,24 @@ public class InMemoryUserStorage implements UserStorage {
     }
 
     @Override
-    public void deleteAllUsers() {
+    public void deleteAll() {
         users.clear();
     }
 
     @Override
-    public Collection<User> getUsers() {
+    public Collection<User> findAll() {
         return users.values();
     }
 
     @Override
-    public void clearUsers() {
-        users.clear();
-    }
-
-    @Override
-    public User getUser(Integer userId) {
+    public Optional<User> findById(Integer userId) {
         User user = users.get(userId);
 
         if (user == null) {
             throw new NotFoundException("Пользователь c id " + userId + " не найден");
         }
 
-        return user;
+        return Optional.of(user);
     }
 
     private int getNextId() {

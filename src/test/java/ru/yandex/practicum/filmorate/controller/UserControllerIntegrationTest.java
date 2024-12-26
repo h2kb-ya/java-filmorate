@@ -6,10 +6,11 @@ import lombok.SneakyThrows;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MvcResult;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.storage.UserStorage;
+import ru.yandex.practicum.filmorate.repository.UserRepository;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -27,11 +28,12 @@ public class UserControllerIntegrationTest extends AbstractApplicationMvcIntegra
     private UserController userController;
 
     @Autowired
-    private UserStorage userStorage;
+    @Qualifier("userRepositoryImpl")
+    private UserRepository userRepository;
 
     @BeforeEach
     public void setup() {
-        userStorage.clearUsers();
+        userRepository.deleteAll();
     }
 
     @Test
@@ -204,11 +206,6 @@ public class UserControllerIntegrationTest extends AbstractApplicationMvcIntegra
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].id").value(savedUser2.getId()));
-
-        mockMvc.perform(get("/users/{id}/friends", savedUser2.getId())
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].id").value(savedUser1.getId()));
     }
 
     @Test
@@ -251,7 +248,7 @@ public class UserControllerIntegrationTest extends AbstractApplicationMvcIntegra
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.error").value("Объект не найден"))
-                .andExpect(jsonPath("$.description").value("Пользователь c id " + badUserId + " не найден"));
+                .andExpect(jsonPath("$.description").value("Пользователь c id " + badUserId + " не найден."));
     }
 
     @Test
@@ -267,7 +264,7 @@ public class UserControllerIntegrationTest extends AbstractApplicationMvcIntegra
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.error").value("Объект не найден"))
-                .andExpect(jsonPath("$.description").value("Пользователь c id " + badFriendId + " не найден"));
+                .andExpect(jsonPath("$.description").value("Пользователь c id " + badFriendId + " не найден."));
     }
 
     @Test

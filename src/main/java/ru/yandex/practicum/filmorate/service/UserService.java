@@ -7,6 +7,8 @@ public interface UserService {
 
     Collection<User> getUsers();
 
+    User get(Integer userId);
+
     User create(User user);
 
     User update(User user);

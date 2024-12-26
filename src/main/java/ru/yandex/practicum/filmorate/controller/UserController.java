@@ -3,7 +3,7 @@ package ru.yandex.practicum.filmorate.controller;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
 import java.util.Collection;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -13,32 +13,28 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.service.UserServiceImpl;
+import ru.yandex.practicum.filmorate.service.UserService;
 
 @RestController
 @RequestMapping("/users")
+@RequiredArgsConstructor
 public class UserController {
 
-    private final UserServiceImpl userServiceImpl;
-
-    @Autowired
-    public UserController(UserServiceImpl userServiceImpl) {
-        this.userServiceImpl = userServiceImpl;
-    }
+    private final UserService userService;
 
     @GetMapping
     public Collection<User> getUsers() {
-        return userServiceImpl.getUsers();
+        return userService.getUsers();
     }
 
     @PostMapping
     public User create(@RequestBody @Valid final User user) {
-        return userServiceImpl.create(user);
+        return userService.create(user);
     }
 
     @PutMapping
     public User update(@RequestBody @Valid final User user) {
-        return userServiceImpl.update(user);
+        return userService.update(user);
     }
 
     @PutMapping("/{id}/friends/{friendId}")
@@ -46,7 +42,7 @@ public class UserController {
             @PathVariable(name = "id") @Positive final Integer userId,
             @PathVariable @Positive final Integer friendId
     ) {
-        userServiceImpl.addFriend(userId, friendId);
+        userService.addFriend(userId, friendId);
     }
 
     @DeleteMapping("/{id}/friends/{friendId}")
@@ -54,12 +50,12 @@ public class UserController {
             @PathVariable(name = "id") @Positive final Integer userId,
             @PathVariable @Positive final Integer friendId
     ) {
-        userServiceImpl.removeFriend(userId, friendId);
+        userService.removeFriend(userId, friendId);
     }
 
     @GetMapping("/{id}/friends")
     public Collection<User> getFriends(@PathVariable(name = "id") @Positive final Integer userId) {
-        return userServiceImpl.getFriends(userId);
+        return userService.getFriends(userId);
     }
 
     @GetMapping("/{id}/friends/common/{otherId}")
@@ -67,6 +63,6 @@ public class UserController {
             @PathVariable(name = "id") @Positive final Integer firstUserId,
             @PathVariable(name = "otherId") @Positive final Integer secondUserId
     ) {
-        return userServiceImpl.getCommonFriends(firstUserId, secondUserId);
+        return userService.getCommonFriends(firstUserId, secondUserId);
     }
 }

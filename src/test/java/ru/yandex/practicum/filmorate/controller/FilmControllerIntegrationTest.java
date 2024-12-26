@@ -1,22 +1,28 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import java.time.LocalDate;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
+import java.util.Set;
 import java.util.stream.IntStream;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MvcResult;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserServiceImpl;
-import ru.yandex.practicum.filmorate.storage.FilmStorage;
-import ru.yandex.practicum.filmorate.storage.UserStorage;
+import ru.yandex.practicum.filmorate.repository.FilmRepository;
+import ru.yandex.practicum.filmorate.repository.UserRepository;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -34,18 +40,50 @@ public class FilmControllerIntegrationTest extends AbstractApplicationMvcIntegra
     private FilmController filmController;
 
     @Autowired
-    private FilmStorage filmStorage;
+    @Qualifier("filmRepositoryImpl")
+    private FilmRepository filmRepository;
 
     @Autowired
-    private UserStorage userStorage;
+    @Qualifier("userRepositoryImpl")
+    private UserRepository userRepository;
 
     @Autowired
     UserServiceImpl userServiceImpl;
 
     @BeforeEach
     public void setUp() {
-        filmStorage.deleteAllFilms();
-        userStorage.deleteAllUsers();
+        filmRepository.deleteAll();
+        userRepository.deleteAll();
+    }
+
+    private static Film getTestFilm1() {
+        Film film = new Film("Inception", "A thief is given a chance to erase his criminal past.",
+                LocalDate.of(2010, 7, 16), 148L);
+        film.setId(1);
+        film.setMpa(new Mpa(3, "PG-13"));
+        film.setGenres(new HashSet<>(Set.of(
+                new Genre(4, "Триллер"),
+                new Genre(1, "Комедия")
+        )));
+
+        return film;
+    }
+
+    private static Film getTestFilm2() {
+        Film film = new Film("The Matrix", "A hacker learns the shocking truth about reality.",
+                LocalDate.of(1999, 3, 31), 136L);
+        film.setId(2);
+        film.setMpa(new Mpa(4, "R"));
+        film.setGenres(new HashSet<>(Set.of(
+                new Genre(4, "Триллер")
+        )));
+        film.setLikes(2);
+
+        return film;
+    }
+
+    private static User getTestUser1() {
+        return new User("TestUser1@example.com", "TestUser1", "Test User One", LocalDate.of(1990, 5, 15));
     }
 
     @Test
@@ -65,8 +103,9 @@ public class FilmControllerIntegrationTest extends AbstractApplicationMvcIntegra
     void whenGetFilmsFilmsAreExistThenReturnFilmsList() {
         assertTrue(filmController.getFilms().isEmpty());
 
-        Film film1 = new Film("Film 1", "Film 1 description", LocalDate.of(2024, 6, 26), 3600L);
-        Film film2 = new Film("Film 2", "Film 2 description", LocalDate.of(2024, 6, 26), 3600L);
+        Film film1 = getTestFilm1();
+
+        Film film2 = getTestFilm2();
 
         filmController.create(film1);
         filmController.create(film2);
@@ -86,7 +125,7 @@ public class FilmControllerIntegrationTest extends AbstractApplicationMvcIntegra
     void whenAddFilmThenReturnFilm() {
         assertTrue(filmController.getFilms().isEmpty());
 
-        Film film = new Film("Film", "Film description", LocalDate.of(2024, 6, 26), 3600L);
+        Film film = getTestFilm1();
 
         String content = serialize(film);
 
@@ -177,16 +216,16 @@ public class FilmControllerIntegrationTest extends AbstractApplicationMvcIntegra
 
         User user = new User("user@yandex.ru", "user", "User", LocalDate.of(1985, 1, 1));
         User savedUser = userServiceImpl.create(user);
-        Film film = new Film("Film", "Film description", LocalDate.of(2024, 6, 26), -3600L);
+        Film film = getTestFilm1();
         Film savedFilm = filmController.create(film);
 
-        assertTrue(savedFilm.getLikes().isEmpty());
+        assertThat(savedFilm.getLikes()).isEqualTo(0);
 
         mockMvc.perform(put("/films/{id}/like/{userId}", savedFilm.getId(), savedUser.getId())
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
 
-        assertTrue(filmStorage.getFilm(savedFilm.getId()).getLikes().contains(savedUser.getId()));
+        assertThat(filmRepository.findById(savedFilm.getId()).get().getLikes()).isEqualTo(1);
     }
 
     @Test
@@ -202,7 +241,7 @@ public class FilmControllerIntegrationTest extends AbstractApplicationMvcIntegra
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.error").value("Объект не найден"))
-                .andExpect(jsonPath("$.description").value("Фильм c id " + badFilmId + " не найден"));
+                .andExpect(jsonPath("$.description").value("Фильм c id " + badFilmId + " не найден."));
     }
 
     @Test
@@ -211,14 +250,14 @@ public class FilmControllerIntegrationTest extends AbstractApplicationMvcIntegra
         assertTrue(filmController.getFilms().isEmpty());
 
         int badUserId = 999;
-        Film film = new Film("Film", "Film description", LocalDate.of(2024, 6, 26), -3600L);
+        Film film = getTestFilm1();
         Film savedFilm = filmController.create(film);
 
         mockMvc.perform(put("/films/{id}/like/{userId}", savedFilm.getId(), badUserId)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.error").value("Объект не найден"))
-                .andExpect(jsonPath("$.description").value("Пользователь c id " + badUserId + " не найден"));
+                .andExpect(jsonPath("$.description").value("Пользователь c id " + badUserId + " не найден."));
     }
 
     @Test
@@ -228,22 +267,22 @@ public class FilmControllerIntegrationTest extends AbstractApplicationMvcIntegra
 
         User user = new User("user@yandex.ru", "user", "User", LocalDate.of(1985, 1, 1));
         User savedUser = userServiceImpl.create(user);
-        Film film = new Film("Film", "Film description", LocalDate.of(2024, 6, 26), -3600L);
+        Film film = getTestFilm1();
         Film savedFilm = filmController.create(film);
 
-        assertTrue(savedFilm.getLikes().isEmpty());
+        assertThat(savedFilm.getLikes()).isEqualTo(0);
 
         mockMvc.perform(put("/films/{id}/like/{userId}", savedFilm.getId(), savedUser.getId())
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
 
-        assertTrue(filmStorage.getFilm(savedFilm.getId()).getLikes().contains(savedUser.getId()));
+        assertThat(filmRepository.findById(savedFilm.getId()).get().getLikes()).isEqualTo(1);
 
         mockMvc.perform(delete("/films/{id}/like/{userId}", savedFilm.getId(), savedUser.getId())
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
 
-        assertFalse(filmStorage.getFilm(savedFilm.getId()).getLikes().contains(savedUser.getId()));
+        assertThat(filmRepository.findById(savedFilm.getId()).get().getLikes()).isEqualTo(0);
     }
 
     @Test
@@ -251,10 +290,17 @@ public class FilmControllerIntegrationTest extends AbstractApplicationMvcIntegra
     void getPopular_happyPath_returnRightCountOfPopularFilms() {
         assertTrue(filmController.getFilms().isEmpty());
 
-        User user = new User("user@yandex.ru", "user", "User", LocalDate.of(1985, 1, 1));
-        IntStream.range(0, 20).forEach(i -> userServiceImpl.create(user));
-        Film film = new Film("Film", "Film description", LocalDate.of(2024, 6, 26), -3600L);
-        IntStream.range(0, 20).forEach(i -> filmController.create(film));
+        IntStream.range(0, 20).forEach(i -> {
+            User user = getTestUser1();
+            user.setLogin("TestUser" + i);
+            user.setEmail("TestUser" + i + "@example.com");
+            userServiceImpl.create(user);
+        });
+
+        IntStream.range(0, 20).forEach(i -> {
+            Film film = getTestFilm1();
+            filmController.create(film);
+        });
 
         List<Integer> userIds = userServiceImpl.getUsers().stream()
                 .map(User::getId)
@@ -264,7 +310,8 @@ public class FilmControllerIntegrationTest extends AbstractApplicationMvcIntegra
                 .map(Film::getId)
                 .toList();
 
-        IntStream.range(0, 100).forEach(i -> filmController.like(getRandomElement(filmIds), getRandomElement(userIds)));
+        IntStream.range(20, 100)
+                .forEach(i -> filmController.like(getRandomElement(filmIds), getRandomElement(userIds)));
 
         MvcResult resultWithDefaultCount = mockMvc.perform(get("/films/popular")
                         .contentType(MediaType.APPLICATION_JSON))
