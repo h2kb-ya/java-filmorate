@@ -24,6 +24,6 @@ public class MpaController {
 
     @GetMapping("/{id}")
     public Mpa getRating(@PathVariable @Positive Integer id) {
-        return mpaService.getRating(id);
+        return mpaService.getRatingById(id);
     }
 }

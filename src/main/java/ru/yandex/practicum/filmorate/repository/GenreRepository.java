@@ -10,4 +10,5 @@ public interface GenreRepository {
 
     Optional<Genre> findById(Integer id);
 
+    boolean isExists(Integer id);
 }

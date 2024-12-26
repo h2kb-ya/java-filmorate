@@ -10,4 +10,5 @@ public interface MpaRepository {
 
     Optional<Mpa> findById(Integer id);
 
+    boolean isExists(Integer id);
 }

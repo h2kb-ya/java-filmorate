@@ -19,8 +19,13 @@ public class MpaServiceImpl implements MpaService {
     }
 
     @Override
-    public Mpa getRating(Integer id) {
+    public Mpa getRatingById(Integer id) {
         return mpaRepository.findById(id).orElseThrow(() -> new NotFoundException(
                 "MPA Рейтинг с id " + id + " не найден"));
+    }
+
+    @Override
+    public boolean isRatingExists(Integer id) {
+        return mpaRepository.isExists(id);
     }
 }

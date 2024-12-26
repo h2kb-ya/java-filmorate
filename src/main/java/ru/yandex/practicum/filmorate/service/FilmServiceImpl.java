@@ -38,20 +38,17 @@ public class FilmServiceImpl implements FilmService {
 
     @Override
     public Film create(final Film film) {
-        try {
-            mpaService.getRating(film.getMpa().getId());
-        } catch (NotFoundException e) {
-            throw new ForeignKeyViolationException("Нарушение целостности внешних ключей: " + e.getMessage());
+        if (!mpaService.isRatingExists(film.getMpa().getId())) {
+            throw new ForeignKeyViolationException(
+                    "Ошибка при создании фильма: указанный рейтинг с id " + film.getMpa().getId() + " не найден");
         }
 
         film.getGenres().stream()
                 .map(Genre::getId)
                 .forEach(genreId -> {
-                    try {
-                        genreService.getGenre(genreId);
-                    } catch (NotFoundException e) {
+                    if (!genreService.isGenreExists(genreId)) {
                         throw new ForeignKeyViolationException(
-                                "Нарушение целостности внешних ключей: " + e.getMessage());
+                                "Ошибка при создании фильма: указанный жанр с id " + genreId + " не найден");
                     }
                 });
 
@@ -62,12 +59,12 @@ public class FilmServiceImpl implements FilmService {
     public Film update(final Film film) {
         filmRepository.findById(film.getId())
                 .orElseThrow(() -> new NotFoundException("Фильм c id " + film.getId() + " не найден."));
-        mpaService.getRating(film.getMpa().getId());
+        mpaService.getRatingById(film.getMpa().getId());
         List<Integer> genreIds = film.getGenres().stream()
                 .map(Genre::getId)
                 .toList();
 
-        genreIds.forEach(genreService::getGenre);
+        genreIds.forEach(genreService::getGenreById);
 
         filmRepository.update(film);
 

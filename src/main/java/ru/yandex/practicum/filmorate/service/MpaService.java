@@ -7,5 +7,7 @@ public interface MpaService {
 
     List<Mpa> getRatings();
 
-    Mpa getRating(Integer id);
+    Mpa getRatingById(Integer id);
+
+    boolean isRatingExists(Integer id);
 }

@@ -38,4 +38,14 @@ public class GenreRepositoryImpl implements GenreRepository {
             return Optional.empty();
         }
     }
+
+    @Override
+    public boolean isExists(Integer id) {
+        String sqlQuery = "SELECT COUNT(*) FROM genres WHERE id = ?";
+
+        log.info("Checking if genres with id {} exists", id);
+        Integer count = jdbcTemplate.queryForObject(sqlQuery, Integer.class, id);
+
+        return count != null && count > 0;
+    }
 }

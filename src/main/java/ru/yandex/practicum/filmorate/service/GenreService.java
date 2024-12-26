@@ -7,6 +7,7 @@ public interface GenreService {
 
     List<Genre> getGenres();
 
-    Genre getGenre(Integer id);
+    Genre getGenreById(Integer id);
 
+    boolean isGenreExists(Integer id);
 }
