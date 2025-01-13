@@ -52,7 +52,6 @@ public class ReviewRepositoryImpl implements ReviewRepository {
             """;
 
     @Override
-    public Review addReview(Review newReview) {
         KeyHolder keyHolder = new GeneratedKeyHolder();
 
         PreparedStatementCreator preparedStatementCreator = con -> {

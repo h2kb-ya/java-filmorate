@@ -6,10 +6,15 @@ import java.util.Collection;
 
 public interface ReviewRepository {
 
-    Review addReview(Review review);
-    Review updateReview(Review review);
-    void deleteReview(Integer reviewId);
-    Review getReview(Integer reviewId);
-    Collection<Review> getReviews(Integer filmId, Integer count);
+    Review addNewReview(Review newReview);
+    Review updateCurrentReview(Review currentReview);
+    Review deleteCurrentReview(Integer reviewId);
+    Review getReviewById(Integer reviewId);
+    Collection<Review> getReviewsList(Integer count);
+    Collection<Review> getReviewsListByFilmId(Integer filmId, Integer count);
+    Review putLikeToReview(Integer reviewId);
+    Review putDislikeToReview(Integer reviewId);
+    Review deleteLikeFromReview(Integer reviewId);
+    Review deleteDislikeFromReview(Integer reviewId);
 
 }
