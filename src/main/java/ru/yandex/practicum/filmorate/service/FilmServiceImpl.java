@@ -92,11 +92,16 @@ public class FilmServiceImpl implements FilmService {
     }
 
     @Override
-    public Collection<Film> getPopular(Integer count) {
-        if (count == 0) {
+    public Collection<Film> getPopular(Integer count, Integer genreId, Integer year) {
+        if (genreId != null && year != null) {
+            return filmRepository.getPopularByGenreAndYear(count, genreId, year);
+        } else if (genreId != null) {
+            return filmRepository.getPopularByGenre(count, genreId);
+        } else if (year != null) {
+            return filmRepository.getPopularByYear(count, year);
+        } else {
             count = Integer.valueOf(DEFAULT_COUNT_VALUE_FOR_GETTING_POPULAR_FILMS);
+            return filmRepository.getPopular(count);
         }
-
-        return filmRepository.getPopular(count);
     }
 }

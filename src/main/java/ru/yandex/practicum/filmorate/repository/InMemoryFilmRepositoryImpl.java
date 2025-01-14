@@ -59,6 +59,21 @@ public class InMemoryFilmRepositoryImpl implements FilmRepository {
     }
 
     @Override
+    public Collection<Film> getPopularByGenre(int count, int genreId) {
+        return null;
+    }
+
+    @Override
+    public Collection<Film> getPopularByYear(int count, int year) {
+        return null;
+    }
+
+    @Override
+    public Collection<Film> getPopularByGenreAndYear(int count, int genreId, int year) {
+        return null;
+    }
+
+    @Override
     public void deleteAll() {
         films.clear();
     }

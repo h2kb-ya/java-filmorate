@@ -154,4 +154,93 @@ public class FilmRepositoryImpl implements FilmRepository {
         log.info("Getting popular films");
         return jdbcTemplate.query(sqlQuery, filmsExtractor, count);
     }
+
+    @Override
+    public List<Film> getPopularByGenre(int count, int genreId) {
+        String sqlQuery = """
+                WITH PopularFilms AS (
+                    SELECT f.id AS film_id, f.name AS film_name, f.description, f.release_date, f.duration,
+                            mpa.id AS mpa_id, mpa.name AS mpa_name,
+                            COUNT(fl.film_id) AS likes
+                    FROM films f
+                            JOIN mpa_ratings mpa ON f.mpa_rating_id = mpa.id
+                            LEFT JOIN film_likes fl ON f.id = fl.film_id
+                            JOIN film_genres fg ON f.id = fg.film_id
+                    WHERE fg.genre_id = ?
+                    GROUP BY f.id, f.name, f.description, f.release_date, f.duration, mpa.id, mpa.name
+                    ORDER BY likes DESC
+                    LIMIT ?
+                )
+                SELECT pf.film_id, pf.film_name, pf.description, pf.release_date, pf.duration,
+                        pf.mpa_id, pf.mpa_name,
+                        g.id AS genre_id, g.name AS genre_name,
+                        pf.likes
+                FROM PopularFilms pf
+                        LEFT JOIN film_genres fg ON pf.film_id = fg.film_id
+                        LEFT JOIN genres g ON g.id = fg.genre_id
+                ORDER BY pf.likes DESC, pf.film_id, g.id;
+                """;
+
+        log.info("Getting popular films by genreId: {}", genreId);
+        return jdbcTemplate.query(sqlQuery, filmsExtractor, genreId, count);
+    }
+
+    @Override
+    public List<Film> getPopularByYear(int count, int year) {
+        String sqlQuery = """
+                WITH PopularFilms AS (
+                    SELECT f.id AS film_id, f.name AS film_name, f.description, f.release_date, f.duration,
+                            mpa.id AS mpa_id, mpa.name AS mpa_name,
+                            COUNT(fl.film_id) AS likes
+                    FROM films f
+                            JOIN mpa_ratings mpa ON f.mpa_rating_id = mpa.id
+                            LEFT JOIN film_likes fl ON f.id = fl.film_id
+                    WHERE EXTRACT(YEAR FROM f.release_date) = ?
+                    GROUP BY f.id, f.name, f.description, f.release_date, f.duration, mpa.id, mpa.name
+                    ORDER BY likes DESC
+                    LIMIT ?
+                )
+                SELECT pf.film_id, pf.film_name, pf.description, pf.release_date, pf.duration,
+                        pf.mpa_id, pf.mpa_name,
+                        g.id AS genre_id, g.name AS genre_name,
+                        pf.likes
+                FROM PopularFilms pf
+                        LEFT JOIN film_genres fg ON pf.film_id = fg.film_id
+                        LEFT JOIN genres g ON g.id = fg.genre_id
+                ORDER BY pf.likes DESC, pf.film_id, g.id;
+                """;
+
+        log.info("Getting popular films by year: {}", year);
+        return jdbcTemplate.query(sqlQuery, filmsExtractor, year, count);
+    }
+
+    @Override
+    public List<Film> getPopularByGenreAndYear(int count, int genreId, int year) {
+        String sqlQuery = """
+                WITH PopularFilms AS (
+                    SELECT f.id AS film_id, f.name AS film_name, f.description, f.release_date, f.duration,
+                            mpa.id AS mpa_id, mpa.name AS mpa_name,
+                            COUNT(fl.film_id) AS likes
+                    FROM films f
+                            JOIN mpa_ratings mpa ON f.mpa_rating_id = mpa.id
+                            LEFT JOIN film_likes fl ON f.id = fl.film_id
+                            JOIN film_genres fg ON f.id = fg.film_id
+                    WHERE fg.genre_id = ? AND EXTRACT(YEAR FROM f.release_date) = ?
+                    GROUP BY f.id, f.name, f.description, f.release_date, f.duration, mpa.id, mpa.name
+                    ORDER BY likes DESC
+                    LIMIT ?
+                )
+                SELECT pf.film_id, pf.film_name, pf.description, pf.release_date, pf.duration,
+                        pf.mpa_id, pf.mpa_name,
+                        g.id AS genre_id, g.name AS genre_name,
+                        pf.likes
+                FROM PopularFilms pf
+                        LEFT JOIN film_genres fg ON pf.film_id = fg.film_id
+                        LEFT JOIN genres g ON g.id = fg.genre_id
+                ORDER BY pf.likes DESC, pf.film_id, g.id;
+                """;
+
+        log.info("Getting popular films by genreId: {} and year: {}", genreId, year);
+        return jdbcTemplate.query(sqlQuery, filmsExtractor, genreId, year, count);
+    }
 }
