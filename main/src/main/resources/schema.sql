@@ -5,6 +5,7 @@ DROP TABLE IF EXISTS film_genres CASCADE;
 DROP TABLE IF EXISTS genres CASCADE;
 DROP TABLE IF EXISTS film_likes CASCADE;
 DROP TABLE IF EXISTS friendships CASCADE;
+DROP TABLE IF EXISTS reviews CASCADE;
 
 CREATE TABLE IF NOT EXISTS mpa_ratings (
                              id SERIAL PRIMARY KEY,
@@ -57,4 +58,15 @@ CREATE TABLE IF NOT EXISTS friendships (
                              PRIMARY KEY (user_id, friend_id),
                              FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
                              FOREIGN KEY (friend_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS reviews (
+   review_id INTEGER      AUTO_INCREMENT PRIMARY KEY,
+   content   VARCHAR(255) NOT NULL,
+   positive  BOOLEAN      NOT NULL,
+   user_id   INTEGER      NOT NULL,
+   film_id   INTEGER      NOT NULL,
+   useful    INTEGER      NOT NULL,
+   FOREIGN KEY (film_id) REFERENCES films(id) ON DELETE CASCADE,
+   FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
