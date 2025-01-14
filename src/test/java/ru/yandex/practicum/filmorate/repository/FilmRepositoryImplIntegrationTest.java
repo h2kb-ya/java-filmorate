@@ -142,6 +142,17 @@ public class FilmRepositoryImplIntegrationTest {
     }
 
     @Test
+    public void deleteFilm_byFilmId() {
+        Integer filmId = 1;
+        Optional<Film> existedFilm = filmRepositoryImpl.findById(filmId);
+        assertThat(existedFilm).isNotEmpty();
+
+        filmRepositoryImpl.deleteById(filmId);
+        existedFilm = filmRepositoryImpl.findById(filmId);
+        assertThat(existedFilm).isEmpty();
+    }
+
+    @Test
     public void deleteAll_filmsExist_filmsDeleted() {
         List<Film> films = filmRepositoryImpl.findAll();
         assertThat(films.size()).isEqualTo(4);

@@ -40,6 +40,11 @@ public class InMemoryFilmRepositoryImpl implements FilmRepository {
     }
 
     @Override
+    public void deleteById(Integer filmId) {
+
+    }
+
+    @Override
     public Collection<Film> findAll() {
         return films.values();
     }

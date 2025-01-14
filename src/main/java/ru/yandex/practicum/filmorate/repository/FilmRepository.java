@@ -12,6 +12,8 @@ public interface FilmRepository {
 
     void delete(Film film);
 
+    void deleteById(Integer filmId);
+
     void deleteAll();
 
     Collection<Film> findAll();

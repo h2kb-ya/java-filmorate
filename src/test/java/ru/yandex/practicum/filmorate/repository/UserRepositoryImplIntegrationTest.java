@@ -107,6 +107,17 @@ public class UserRepositoryImplIntegrationTest {
     }
 
     @Test
+    public void deleteUser_byUserId() {
+        Integer userId = 1;
+        Optional<User> existedUser = userRepositoryImpl.findById(userId);
+        assertThat(existedUser).isNotEmpty();
+
+        userRepositoryImpl.deleteById(userId);
+        existedUser = userRepositoryImpl.findById(userId);
+        assertThat(existedUser).isEmpty();
+    }
+
+    @Test
     public void deleteAll_usersExist_usersDeleted() {
         List<User> users = userRepositoryImpl.findAll();
         assertThat(users.size()).isEqualTo(4);

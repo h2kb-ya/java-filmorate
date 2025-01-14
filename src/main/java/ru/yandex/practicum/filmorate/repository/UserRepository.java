@@ -12,6 +12,8 @@ public interface UserRepository {
 
     void delete(User user);
 
+    void deleteById(Integer userId);
+
     void deleteAll();
 
     Collection<User> findAll();

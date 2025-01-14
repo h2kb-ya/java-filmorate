@@ -39,6 +39,11 @@ public class InMemoryUserRepositoryImpl implements UserRepository {
     }
 
     @Override
+    public void deleteById(Integer id) {
+
+    }
+
+    @Override
     public void deleteAll() {
         users.clear();
     }

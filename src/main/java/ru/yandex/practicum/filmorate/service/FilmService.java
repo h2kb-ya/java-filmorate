@@ -12,6 +12,7 @@ public interface FilmService {
     Film create(Film film);
 
     Film update(Film film);
+    void deleteById(Integer filmId);
 
     void like(Integer id, Integer userId);
 

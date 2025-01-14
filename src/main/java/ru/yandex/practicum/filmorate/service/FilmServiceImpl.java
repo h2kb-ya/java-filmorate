@@ -72,6 +72,13 @@ public class FilmServiceImpl implements FilmService {
     }
 
     @Override
+    public void deleteById(Integer filmId) {
+        if (filmRepository.findById(filmId).isPresent()) {
+            filmRepository.deleteById(filmId);
+        }
+    }
+
+    @Override
     public void like(final Integer id, final Integer userId) {
         User user = userService.get(userId);
 
