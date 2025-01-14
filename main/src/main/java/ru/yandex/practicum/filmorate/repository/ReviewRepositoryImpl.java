@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.repository;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -16,8 +17,6 @@ import java.sql.PreparedStatement;
 import java.util.Collection;
 import java.util.Objects;
 
-import static ru.yandex.practicum.filmorate.util.FilmorateConstants.DEFAULT_REVIEW_USEFUL_RATE;
-
 @Slf4j
 @Repository
 @RequiredArgsConstructor
@@ -26,79 +25,100 @@ public class ReviewRepositoryImpl implements ReviewRepository {
     private final JdbcTemplate jdbcTemplate;
     private final ReviewRowMapper reviewRowMapper;
 
+    private static final String INSERT_INTO_REVIEWS = """
+            INSERT INTO reviews(content, positive, user_id, film_id, useful)
+            VALUES (?, ?, ?, ?, ?)
+            """;
+    private static final String UPDATE_CURR_REVIEW = """
+            UPDATE reviews
+            SET content = ?, positive = ?, user_id = ?, film_id = ?
+            WHERE review_id = ?
+            """;
+    private static final String DELETE_CURR_REVIEW = """
+            DELETE FROM reviews
+            WHERE review_id = ?
+            """;
+    private static final String SELECT_REVIEW_BY_ID = """
+            SELECT review_id, content, positive, user_id, film_id, useful
+            FROM reviews
+            WHERE review_id = ?
+            """;
+    private static final String SELECT_ALL_REVIEWS_WITH_LIMIT = """
+            SELECT review_id, content, positive, user_id, film_id, useful
+            FROM reviews
+            ORDER BY useful DESC
+            LIMIT ?
+            """;
+    private static final String SELECT_REVIEWS_BY_FILM_ID_WITH_LIMIT = """
+            SELECT review_id, content, positive, user_id, film_id, useful
+            FROM reviews
+            WHERE film_id = ?
+            ORDER BY useful DESC
+            LIMIT ?
+            """;
+
     @Override
     public Review addNewReview(Review newReview) {
-        final String sqlQuery = "INSERT INTO reviews(content, positive, user_id, film_id, useful) " +
-                "VALUES (?, ?, ?, ?, ?)";
-
         KeyHolder keyHolder = new GeneratedKeyHolder();
 
         PreparedStatementCreator preparedStatementCreator = con -> {
-            PreparedStatement stmt = con.prepareStatement(sqlQuery, new String[]{"review_id"});
+            PreparedStatement stmt = con.prepareStatement(INSERT_INTO_REVIEWS, new String[]{"review_id"});
             stmt.setString(1, newReview.getContent());
             stmt.setBoolean(2, newReview.getIsPositive());
             stmt.setInt(3, newReview.getUserId());
             stmt.setInt(4, newReview.getFilmId());
-            stmt.setInt(5, DEFAULT_REVIEW_USEFUL_RATE);
+            stmt.setInt(5, newReview.getUseful());
             return stmt;
         };
 
         jdbcTemplate.update(preparedStatementCreator, keyHolder);
         newReview.setReviewId(Objects.requireNonNull(keyHolder.getKey()).intValue());
 
-        if (newReview.getReviewId() == null) {
-            throw new DataIntegrityViolationException("Не удалось сохранить отзыв: " + newReview);
+        final Integer reviewId = newReview.getReviewId();
+
+        if (reviewId == null) {
+            final String errorMessage = "Не удалось сохранить отзыв: " + newReview;
+            log.error(errorMessage);
+            throw new DataIntegrityViolationException(errorMessage);
         }
 
-        log.info("Сохранен отзыв: {}", newReview);
-        return newReview;
+        return getReviewById(reviewId);
     }
 
     @Override
     public Review updateCurrentReview(Review currentReview) {
-        final String sqlQuery = "UPDATE reviews " +
-                "SET content = ?, positive = ?, user_id = ?, film_id = ? " +
-                "WHERE review_id = ?";
-
-        jdbcTemplate.update(sqlQuery,
-                currentReview.getContent(),
-                currentReview.getIsPositive(),
-                currentReview.getUserId(),
-                currentReview.getFilmId(),
-                currentReview.getReviewId()
-        );
-
-        final Review updatedReview = getReviewById(currentReview.getReviewId());
-        if (updatedReview == null) {
-            throw new DataIntegrityViolationException("Не удалось обновить отзыв: " + currentReview);
+        try {
+            jdbcTemplate.update(UPDATE_CURR_REVIEW,
+                    currentReview.getContent(),
+                    currentReview.getIsPositive(),
+                    currentReview.getUserId(),
+                    currentReview.getFilmId(),
+                    currentReview.getReviewId()
+            );
+        } catch (DataAccessException e) {
+            final String errorMessage = "Не удалось обновить отзыв: " + currentReview;
+            log.error(errorMessage);
+            throw new DataIntegrityViolationException(errorMessage, e.getCause());
         }
 
-        log.info("Обновлен отзыв: {}", updatedReview);
-        return updatedReview;
+        return getReviewById(currentReview.getReviewId());
     }
 
     @Override
-    public Review deleteCurrentReview(Integer reviewId) {
-        final Review deletedReview = getReviewById(reviewId);
-        final String sqlQuery = "DELETE FROM reviews " +
-                "WHERE review_id = ?";
-        jdbcTemplate.update(sqlQuery, reviewId);
-
-        if (getReviewById(reviewId) != null) {
-            throw new DataIntegrityViolationException("Не удалось удалить отзыв: " + deletedReview);
+    public void deleteCurrentReview(Integer reviewId) {
+        try {
+            jdbcTemplate.update(DELETE_CURR_REVIEW, reviewId);
+        } catch (DataAccessException e) {
+            final String errorMessage = "Не удалось удалить отзыв с id=" + reviewId;
+            log.error(errorMessage);
+            throw new DataIntegrityViolationException(errorMessage, e.getCause());
         }
-
-        log.info("Удален отзыв: {}", deletedReview);
-        return deletedReview;
     }
 
     @Override
     public Review getReviewById(Integer reviewId) {
-        final String sqlQuery = "SELECT review_id, content, positive, user_id, film_id, useful " +
-                "FROM reviews " +
-                "WHERE review_id = ?";
         try {
-            return jdbcTemplate.queryForObject(sqlQuery, reviewRowMapper, reviewId);
+            return jdbcTemplate.queryForObject(SELECT_REVIEW_BY_ID, reviewRowMapper, reviewId);
         } catch (EmptyResultDataAccessException ignored) {
             return null;
         }
@@ -106,49 +126,25 @@ public class ReviewRepositoryImpl implements ReviewRepository {
 
     @Override
     public Collection<Review> getReviewsList(Integer count) {
-        final String sqlQuery = "SELECT review_id, content, positive, user_id, film_id, useful " +
-                "FROM reviews " +
-                "ORDER BY useful DESC " +
-                "LIMIT ?";
-        return jdbcTemplate.queryForStream(sqlQuery, reviewRowMapper, count).toList();
+        try {
+            return jdbcTemplate.queryForStream(SELECT_ALL_REVIEWS_WITH_LIMIT, reviewRowMapper, count).toList();
+        } catch (DataAccessException e) {
+            final String errorMessage = "Не удалось получить список отзывов.";
+            log.error(errorMessage);
+            throw new DataIntegrityViolationException(errorMessage, e.getCause());
+        }
     }
 
     @Override
     public Collection<Review> getReviewsListByFilmId(Integer filmId, Integer count) {
-        final String sqlQuery = "SELECT review_id, content, positive, user_id, film_id, useful " +
-                "FROM reviews " +
-                "WHERE film_id = ? " +
-                "ORDER BY useful DESC " +
-                "LIMIT ?";
-        return jdbcTemplate.queryForStream(sqlQuery, reviewRowMapper, filmId, count).toList();
-    }
-
-    @Override
-    public Review putLikeToReview(Integer reviewId) {
-        final String sqlQuery = "UPDATE reviews SET useful = useful + 1 WHERE review_id = ?";
-        jdbcTemplate.update(sqlQuery, reviewId);
-        return getReviewById(reviewId);
-    }
-
-    @Override
-    public Review putDislikeToReview(Integer reviewId) {
-        final String sqlQuery = "UPDATE reviews SET useful = useful - 1 WHERE review_id = ?";
-        jdbcTemplate.update(sqlQuery, reviewId);
-        return getReviewById(reviewId);
-    }
-
-    @Override
-    public Review deleteLikeFromReview(Integer reviewId) {
-        final String sqlQuery = "UPDATE reviews SET useful = useful - 1 WHERE review_id = ?";
-        jdbcTemplate.update(sqlQuery, reviewId);
-        return getReviewById(reviewId);
-    }
-
-    @Override
-    public Review deleteDislikeFromReview(Integer reviewId) {
-        final String sqlQuery = "UPDATE reviews SET useful = useful - 1 WHERE review_id = ?";
-        jdbcTemplate.update(sqlQuery, reviewId);
-        return getReviewById(reviewId);
+        try {
+            return jdbcTemplate.queryForStream(SELECT_REVIEWS_BY_FILM_ID_WITH_LIMIT, reviewRowMapper, filmId, count)
+                    .toList();
+        } catch (DataAccessException e) {
+            final String errorMessage = "Не удалось получить список отзывов на фильм с id=" + filmId;
+            log.error(errorMessage);
+            throw new DataIntegrityViolationException(errorMessage, e.getCause());
+        }
     }
 
 }
