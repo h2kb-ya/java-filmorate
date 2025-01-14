@@ -4,6 +4,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.model.ResponseMessage;
 import ru.yandex.practicum.filmorate.model.Review;
 import ru.yandex.practicum.filmorate.service.ReviewService;
 
@@ -41,8 +42,7 @@ public class ReviewController {
     @GetMapping
     public Collection<Review> getReviewsListByFilmId(
             @RequestParam Integer filmId,
-            @RequestParam(defaultValue = DEFAULT_COUNT_VALUE_FOR_GETTING_REVIEWS)
-            @Positive Integer count
+            @RequestParam(defaultValue = DEFAULT_COUNT_VALUE_FOR_GETTING_REVIEWS) @Positive Integer count
     ) {
         return reviewService.getReviewsListByFilmId(filmId, count);
     }
@@ -64,19 +64,21 @@ public class ReviewController {
     }
 
     @DeleteMapping("{id}/like/{userId}")
-    public Review deleteLikeFromReview(
+    public ResponseMessage deleteLikeFromReview(
             @PathVariable @Positive Integer id,
             @PathVariable @Positive Integer userId
     ) {
-        return reviewService.deleteLikeFromReview(id, userId);
+        reviewService.deleteLikeFromReview(id, userId);
+        return new ResponseMessage(String.format("Лайк на отзыв с id=%d удален пользователем с id=%d.", id, userId));
     }
 
     @DeleteMapping("{id}/dislike/{userId}")
-    public Review deleteDislikeFromReview(
+    public ResponseMessage deleteDislikeFromReview(
             @PathVariable @Positive Integer id,
             @PathVariable @Positive Integer userId
     ) {
-        return reviewService.deleteDislikeFromReview(id, userId);
+        reviewService.deleteDislikeFromReview(id, userId);
+        return new ResponseMessage(String.format("Дизлайк на отзыв с id=%d удален пользователем с id=%d.", id, userId));
     }
 
 }
