@@ -6,11 +6,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.model.ReactionTypes;
 import ru.yandex.practicum.filmorate.model.Review;
+import ru.yandex.practicum.filmorate.model.UserReactionToReview;
 import ru.yandex.practicum.filmorate.repository.ReviewRepository;
+import ru.yandex.practicum.filmorate.repository.UserReactionToReviewRepository;
 
 import java.util.Collection;
-import java.util.List;
+import java.util.Objects;
 
 import static ru.yandex.practicum.filmorate.util.FilmorateConstants.DEFAULT_REVIEW_USEFUL_RATE;
 
@@ -21,6 +24,10 @@ public class ReviewServiceImpl implements ReviewService {
 
     @Qualifier("reviewRepositoryImpl")
     private final ReviewRepository reviewRepository;
+
+    @Qualifier("userReactionToReviewRepositoryImpl")
+    private final UserReactionToReviewRepository userReactionToReviewRepository;
+
     private final FilmService filmService;
     private final UserService userService;
 
@@ -77,26 +84,126 @@ public class ReviewServiceImpl implements ReviewService {
 
     @Override
     public Collection<Review> getReviewsListByFilmId(Integer filmId, Integer count) {
-        return List.of();
+        if (filmId == null) {
+            return reviewRepository.getReviewsList(count);
+        }
+        return reviewRepository.getReviewsListByFilmId(filmId, count);
     }
 
     @Override
     public Review putLikeToReview(Integer reviewId, Integer userId) {
-        return null;
+
+        if (userService.get(userId) == null) {
+            final String errorMessage = String.format("Пользователь с id=%d не найден.", userId);
+            log.warn(errorMessage);
+            throw new NotFoundException(errorMessage);
+        }
+
+        Review review = getReviewById(reviewId);
+        UserReactionToReview reaction = userReactionToReviewRepository.getReaction(userId, reviewId);
+
+        if (reaction == null) {
+            userReactionToReviewRepository.addNewReaction(UserReactionToReview.builder()
+                    .userId(userId)
+                    .reviewId(reviewId)
+                    .reaction(ReactionTypes.LIKE.toString())
+                    .build()
+            );
+        }
+
+        if (Objects.requireNonNull(reaction).getReaction().equals(ReactionTypes.DISLIKE.toString())) {
+            reaction.setReaction(ReactionTypes.LIKE.toString());
+        }
+
+        review.setUseful(review.getUseful() + 1);
+        return updateCurrentReview(review);
     }
 
     @Override
     public Review putDislikeToReview(Integer reviewId, Integer userId) {
-        return null;
+
+        if (userService.get(userId) == null) {
+            final String errorMessage = String.format("Пользователь с id=%d не найден.", userId);
+            log.warn(errorMessage);
+            throw new NotFoundException(errorMessage);
+        }
+
+        Review review = getReviewById(reviewId);
+        UserReactionToReview reaction = userReactionToReviewRepository.getReaction(userId, reviewId);
+
+        if (reaction == null) {
+            userReactionToReviewRepository.addNewReaction(UserReactionToReview.builder()
+                    .userId(userId)
+                    .reviewId(reviewId)
+                    .reaction(ReactionTypes.DISLIKE.toString())
+                    .build()
+            );
+        }
+
+        if (Objects.requireNonNull(reaction).getReaction().equals(ReactionTypes.LIKE.toString())) {
+            reaction.setReaction(ReactionTypes.DISLIKE.toString());
+        }
+
+        review.setUseful(review.getUseful() - 1);
+        return updateCurrentReview(review);
     }
 
     @Override
     public void deleteLikeFromReview(Integer reviewId, Integer userId) {
 
+        if (userService.get(userId) == null) {
+            final String errorMessage = String.format("Пользователь с id=%d не найден.", userId);
+            log.warn(errorMessage);
+            throw new NotFoundException(errorMessage);
+        }
+
+        Review review = getReviewById(reviewId);
+        UserReactionToReview reaction = userReactionToReviewRepository.getReaction(userId, reviewId);
+
+        if (reaction == null) {
+            final String errorMessage = String.format("Реакция пользователя с id=%d на отзыв с id=%d не найдена.",
+                    userId, reviewId);
+            log.warn(errorMessage);
+            throw new NotFoundException(errorMessage);
+        }
+
+        if (Objects.requireNonNull(reaction).getReaction().equals(ReactionTypes.LIKE.toString())) {
+            review.setUseful(review.getUseful() - 1);
+        } else {
+            review.setUseful(review.getUseful() + 1);
+        }
+
+        userReactionToReviewRepository.deleteReaction(reaction);
+
     }
 
     @Override
     public void deleteDislikeFromReview(Integer reviewId, Integer userId) {
+
+        if (userService.get(userId) == null) {
+            final String errorMessage = String.format("Пользователь с id=%d не найден.", userId);
+            log.warn(errorMessage);
+            throw new NotFoundException(errorMessage);
+        }
+
+        Review review = getReviewById(reviewId);
+        UserReactionToReview reaction = userReactionToReviewRepository.getReaction(userId, reviewId);
+
+        if (reaction == null) {
+            final String errorMessage = String.format("Реакция пользователя с id=%d на отзыв с id=%d не найдена.",
+                    userId, reviewId);
+            log.warn(errorMessage);
+            throw new NotFoundException(errorMessage);
+        }
+
+        if (Objects.requireNonNull(reaction).getReaction().equals(ReactionTypes.LIKE.toString())) {
+            final String errorMessage = String.format("Лайк пользователя с id=%d на отзыв с id=%d не найден.",
+                    userId, reviewId);
+            log.warn(errorMessage);
+            throw new NotFoundException(errorMessage);
+        }
+
+        userReactionToReviewRepository.deleteReaction(reaction);
 
     }
 
