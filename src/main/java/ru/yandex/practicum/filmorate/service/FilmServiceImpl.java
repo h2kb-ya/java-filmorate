@@ -72,9 +72,11 @@ public class FilmServiceImpl implements FilmService {
     }
 
     @Override
-    public void deleteById(Integer filmId) {
-        if (filmRepository.findById(filmId).isPresent()) {
-            filmRepository.deleteById(filmId);
+    public void deleteById(Integer id) {
+        if (filmRepository.findById(id).isPresent()) {
+            filmRepository.deleteById(id);
+        } else {
+            throw new NotFoundException("Фильм с id - " + id + " не найден.");
         }
     }
 

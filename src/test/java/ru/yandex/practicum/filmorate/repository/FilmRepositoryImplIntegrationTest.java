@@ -136,19 +136,8 @@ public class FilmRepositoryImplIntegrationTest {
         Optional<Film> existedFilm = filmRepositoryImpl.findById(getTestFilm1().getId());
         assertThat(existedFilm).isNotEmpty();
 
-        filmRepositoryImpl.delete(getTestFilm1());
+        filmRepositoryImpl.deleteById(getTestFilm1().getId());
         existedFilm = filmRepositoryImpl.findById(getTestFilm1().getId());
-        assertThat(existedFilm).isEmpty();
-    }
-
-    @Test
-    public void deleteFilm_byFilmId() {
-        Integer filmId = 1;
-        Optional<Film> existedFilm = filmRepositoryImpl.findById(filmId);
-        assertThat(existedFilm).isNotEmpty();
-
-        filmRepositoryImpl.deleteById(filmId);
-        existedFilm = filmRepositoryImpl.findById(filmId);
         assertThat(existedFilm).isEmpty();
     }
 

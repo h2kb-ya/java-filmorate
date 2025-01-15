@@ -34,11 +34,6 @@ public class InMemoryUserRepositoryImpl implements UserRepository {
     }
 
     @Override
-    public void delete(final User user) {
-
-    }
-
-    @Override
     public void deleteById(Integer id) {
 
     }
