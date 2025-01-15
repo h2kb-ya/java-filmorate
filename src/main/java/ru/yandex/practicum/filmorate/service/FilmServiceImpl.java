@@ -93,7 +93,7 @@ public class FilmServiceImpl implements FilmService {
 
     @Override
     public Collection<Film> getPopular(Integer count, Integer genreId, Integer year) {
-        if (count==0) {
+        if (count == 0) {
             count = Integer.valueOf(DEFAULT_COUNT_VALUE_FOR_GETTING_POPULAR_FILMS);
         }
 
