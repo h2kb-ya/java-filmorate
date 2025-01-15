@@ -6,6 +6,7 @@ DROP TABLE IF EXISTS genres CASCADE;
 DROP TABLE IF EXISTS film_likes CASCADE;
 DROP TABLE IF EXISTS friendships CASCADE;
 DROP TABLE IF EXISTS reviews CASCADE;
+DROP TABLE IF EXISTS user_reactions_to_reviews CASCADE;
 
 CREATE TABLE IF NOT EXISTS mpa_ratings (
                              id SERIAL PRIMARY KEY,
@@ -61,12 +62,21 @@ CREATE TABLE IF NOT EXISTS friendships (
 );
 
 CREATE TABLE IF NOT EXISTS reviews (
-   review_id INTEGER      AUTO_INCREMENT PRIMARY KEY,
-   content   VARCHAR(255) NOT NULL,
-   positive  BOOLEAN      NOT NULL,
-   user_id   INTEGER      NOT NULL,
-   film_id   INTEGER      NOT NULL,
-   useful    INTEGER      NOT NULL,
-   FOREIGN KEY (film_id) REFERENCES films(id) ON DELETE CASCADE,
-   FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    review_id INTEGER      AUTO_INCREMENT PRIMARY KEY,
+    content   VARCHAR(255) NOT NULL,
+    positive  BOOLEAN      NOT NULL,
+    user_id   INTEGER      NOT NULL,
+    film_id   INTEGER      NOT NULL,
+    useful    INTEGER      NOT NULL,
+    FOREIGN KEY (film_id) REFERENCES films(id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS user_reactions_to_reviews (
+    reaction_id BIGINT      AUTO_INCREMENT PRIMARY KEY,
+    user_id     INTEGER     NOT NULL,
+    review_id   INTEGER     NOT NULL,
+    reaction    VARCHAR(20) NOT NULL,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (review_id) REFERENCES reviews(review_id) ON DELETE CASCADE
 );
