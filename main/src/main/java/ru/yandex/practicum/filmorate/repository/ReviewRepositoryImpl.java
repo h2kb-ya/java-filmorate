@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.repository;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -51,6 +52,7 @@ public class ReviewRepositoryImpl implements ReviewRepository {
             """;
 
     @Override
+    public Review addReview(Review newReview) {
         KeyHolder keyHolder = new GeneratedKeyHolder();
 
         PreparedStatementCreator preparedStatementCreator = con -> {
