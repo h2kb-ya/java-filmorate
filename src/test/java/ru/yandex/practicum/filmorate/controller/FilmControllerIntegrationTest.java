@@ -10,10 +10,8 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MvcResult;
 import ru.yandex.practicum.filmorate.model.*;
 import ru.yandex.practicum.filmorate.repository.DirectorRepository;
-import ru.yandex.practicum.filmorate.repository.DirectorRepositoryImpl;
 import ru.yandex.practicum.filmorate.repository.FilmRepository;
 import ru.yandex.practicum.filmorate.repository.UserRepository;
-import ru.yandex.practicum.filmorate.service.DirectorServiceImpl;
 import ru.yandex.practicum.filmorate.service.UserServiceImpl;
 
 import java.time.LocalDate;
@@ -55,15 +53,15 @@ public class FilmControllerIntegrationTest extends AbstractApplicationMvcIntegra
     }
 
     private static Director getTestDirector1() {
-        return new Director(1,"Кристофер Нолан");
+        return new Director(1, "Кристофер Нолан");
     }
 
     private static Director getTestDirector2() {
-        return new Director(2,"Лилли Вачовски");
+        return new Director(2, "Лилли Вачовски");
     }
 
     private static Director getTestDirector3() {
-        return new Director(3,"Лана Вачовски");
+        return new Director(3, "Лана Вачовски");
     }
 
     private static Film getTestFilm1() {
@@ -158,7 +156,7 @@ public class FilmControllerIntegrationTest extends AbstractApplicationMvcIntegra
                 .andReturn();
 
         Film filmFromResponse = deserialize(result, Film.class);
-                assertEquals(film.getName(), filmFromResponse.getName());
+        assertEquals(film.getName(), filmFromResponse.getName());
         assertEquals(film.getDescription(), filmFromResponse.getDescription());
         assertEquals(1, filmController.getFilms().size());
     }
