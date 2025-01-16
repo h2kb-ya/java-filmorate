@@ -10,7 +10,7 @@ public interface FilmRepository {
 
     Film update(Film film);
 
-    void delete(Film film);
+    void deleteById(Integer id);
 
     void deleteAll();
 

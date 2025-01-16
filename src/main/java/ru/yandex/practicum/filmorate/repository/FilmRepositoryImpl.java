@@ -73,11 +73,11 @@ public class FilmRepositoryImpl implements FilmRepository {
     }
 
     @Override
-    public void delete(Film film) {
+    public void deleteById(Integer id) {
         String sqlQuery = "DELETE FROM films WHERE id = ?";
 
-        log.info("Deleting film {}", film);
-        jdbcTemplate.update(sqlQuery, film.getId());
+        log.info("Deleting film with ID - {}", id);
+        jdbcTemplate.update(sqlQuery, id);
     }
 
     @Override
