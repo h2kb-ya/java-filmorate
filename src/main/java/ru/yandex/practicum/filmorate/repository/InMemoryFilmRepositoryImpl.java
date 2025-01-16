@@ -1,14 +1,11 @@
 package ru.yandex.practicum.filmorate.repository;
 
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
-import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.model.Film;
+
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Component
@@ -56,6 +53,11 @@ public class InMemoryFilmRepositoryImpl implements FilmRepository {
                 .sorted(Comparator.comparingInt(Film::getLikes).reversed())
                 .limit(count)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public Collection<Film> getDirectorFilms(Integer directorId, String sortBy) {
+        return List.of();
     }
 
     @Override

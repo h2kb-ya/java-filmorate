@@ -1,11 +1,5 @@
 package ru.yandex.practicum.filmorate.controller;
 
-import java.time.LocalDate;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Random;
-import java.util.Set;
-import java.util.stream.IntStream;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -14,22 +8,18 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MvcResult;
-import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.Genre;
-import ru.yandex.practicum.filmorate.model.Mpa;
-import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.service.UserServiceImpl;
+import ru.yandex.practicum.filmorate.model.*;
 import ru.yandex.practicum.filmorate.repository.FilmRepository;
 import ru.yandex.practicum.filmorate.repository.UserRepository;
+import ru.yandex.practicum.filmorate.service.UserServiceImpl;
+
+import java.time.LocalDate;
+import java.util.*;
+import java.util.stream.IntStream;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -65,6 +55,9 @@ public class FilmControllerIntegrationTest extends AbstractApplicationMvcIntegra
                 new Genre(4, "Триллер"),
                 new Genre(1, "Комедия")
         )));
+        film.setDirectors(new HashSet<>(Set.of(
+                new Director(1,"Кристофер Нолан")
+        )));
 
         return film;
     }
@@ -77,7 +70,27 @@ public class FilmControllerIntegrationTest extends AbstractApplicationMvcIntegra
         film.setGenres(new HashSet<>(Set.of(
                 new Genre(4, "Триллер")
         )));
+        film.setDirectors(new HashSet<>(Set.of(
+                new Director(2,"Лилли Вачовски"),
+                new Director(3,"Лана Вачовски")
+        )));
         film.setLikes(2);
+
+        return film;
+    }
+
+    private static Film getTestFilm3() {
+        Film film = new Film("Interstellar", "Explorers travel through a wormhole to find a new home.",
+                LocalDate.of(2014, 11, 7), 169L);
+        film.setId(3);
+        film.setMpa(new Mpa(3, "PG-13"));
+        film.setGenres(new HashSet<>(Set.of(
+                new Genre(5, "Документальный")
+        )));
+        film.setDirectors(new HashSet<>(Set.of(
+                new Director(1,"Кристофер Нолан")
+        )));
+        film.setLikes(1);
 
         return film;
     }
@@ -329,6 +342,45 @@ public class FilmControllerIntegrationTest extends AbstractApplicationMvcIntegra
 
         List<Film> filmsWithCustomCount = deserializeList(resultWithCustomCount, Film.class);
         assertEquals(3, filmsWithCustomCount.size());
+    }
+
+    @Test
+    @SneakyThrows
+    void getFilmsByDirectorIdSortedByLikes() {
+        assertTrue(filmController.getFilms().isEmpty());
+
+        Film film1 = getTestFilm1();
+        Film film2 = getTestFilm2();
+        Film film3 = getTestFilm3();
+        User user = getTestUser1();
+
+        filmController.create(film1);
+        filmController.create(film2);
+        filmController.create(film3);
+        userServiceImpl.create(user);
+        filmController.like(film3.getId(), user.getId());
+
+        Collection<Film> films = filmController.getDirectorFilms(1, "likes");
+
+        assertThat(Objects.equals(films.stream().findFirst().orElse(null), film3)).isTrue();
+    }
+
+    @Test
+    @SneakyThrows
+    void getFilmsByDirectorIdSortedByYears() {
+        assertTrue(filmController.getFilms().isEmpty());
+
+        Film film1 = getTestFilm1();
+        Film film2 = getTestFilm2();
+        Film film3 = getTestFilm3();
+
+        filmController.create(film1);
+        filmController.create(film2);
+        filmController.create(film3);
+
+        Collection<Film> films = filmController.getDirectorFilms(1, "year");
+
+        assertThat(Objects.equals(films.stream().findFirst().orElse(null), film1)).isTrue();
     }
 
     private static Integer getRandomElement(List<Integer> list) {
