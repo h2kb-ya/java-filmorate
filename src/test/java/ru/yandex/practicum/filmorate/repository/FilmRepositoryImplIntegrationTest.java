@@ -153,7 +153,7 @@ public class FilmRepositoryImplIntegrationTest {
 
     @Test
     public void getPopular_useCount_returnPopularLimitByCount() {
-        List<Film> popularFilms = filmRepositoryImpl.getPopular(3);
+        List<Film> popularFilms = filmRepositoryImpl.getPopular(3, null, null);
 
         assertThat(popularFilms).isNotEmpty();
         assertThat(popularFilms.size()).isEqualTo(3);

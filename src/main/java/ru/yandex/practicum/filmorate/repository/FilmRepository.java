@@ -18,11 +18,5 @@ public interface FilmRepository {
 
     Optional<Film> findById(int id);
 
-    Collection<Film> getPopular(int count);
-
-    Collection<Film> getPopularByGenre(int count, int genreId);
-
-    Collection<Film> getPopularByYear(int count, int year);
-
-    Collection<Film> getPopularByGenreAndYear(int count, int genreId, int year);
+    Collection<Film> getPopular(int count, Integer genreId, Integer year);
 }

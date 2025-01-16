@@ -97,14 +97,6 @@ public class FilmServiceImpl implements FilmService {
             count = Integer.valueOf(DEFAULT_COUNT_VALUE_FOR_GETTING_POPULAR_FILMS);
         }
 
-        if (genreId != null && year != null) {
-            return filmRepository.getPopularByGenreAndYear(count, genreId, year);
-        } else if (genreId != null) {
-            return filmRepository.getPopularByGenre(count, genreId);
-        } else if (year != null) {
-            return filmRepository.getPopularByYear(count, year);
-        } else {
-            return filmRepository.getPopular(count);
-        }
+        return filmRepository.getPopular(count, genreId, year);
     }
 }
