@@ -73,7 +73,7 @@ CREATE TABLE IF NOT EXISTS reviews (
 );
 
 CREATE TABLE IF NOT EXISTS user_reactions_to_reviews (
-    reaction_id BIGINT      AUTO_INCREMENT PRIMARY KEY,
+    reaction_id INTEGER     AUTO_INCREMENT PRIMARY KEY,
     user_id     INTEGER     NOT NULL,
     review_id   INTEGER     NOT NULL,
     reaction    VARCHAR(20) NOT NULL,
