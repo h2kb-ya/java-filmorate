@@ -16,8 +16,10 @@ public class FilmorateExceptionHandler {
         return new ErrorResponse("Объект не найден", e.getMessage());
     }
 
-    @ExceptionHandler({ValidationException.class, MethodArgumentNotValidException.class,
-            ForeignKeyViolationException.class})
+    @ExceptionHandler({ValidationException.class,
+            MethodArgumentNotValidException.class,
+            ForeignKeyViolationException.class,
+            DataDuplicationException.class})
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse handleValidationException(final Exception e) {
         return new ErrorResponse("Ошибка валидации", e.getMessage());

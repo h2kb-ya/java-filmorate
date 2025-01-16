@@ -14,7 +14,7 @@ public class UserReactionToReviewRowMapper implements RowMapper<UserReactionToRe
     public UserReactionToReview mapRow(ResultSet resultSet, int rowNum) throws SQLException {
 
         return UserReactionToReview.builder()
-                .reactionId(resultSet.getLong("reaction_id"))
+                .reactionId(resultSet.getInt("reaction_id"))
                 .userId(resultSet.getInt("user_id"))
                 .reviewId(resultSet.getInt("review_id"))
                 .reaction(resultSet.getString("reaction"))
