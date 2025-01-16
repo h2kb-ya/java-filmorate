@@ -97,7 +97,7 @@ public class UserRepositoryImplIntegrationTest {
     }
 
     @Test
-    public void delete_userExists_userDeleted() {
+    public void deleteById_userExists_userDeleted() {
         Optional<User> existedUser = userRepositoryImpl.findById(getTestUser1().getId());
         assertThat(existedUser).isNotEmpty();
 

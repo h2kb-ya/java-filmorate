@@ -132,7 +132,7 @@ public class FilmRepositoryImplIntegrationTest {
     }
 
     @Test
-    public void delete_filmExists_filmDeleted() {
+    public void deleteById_filmExists_filmDeleted() {
         Optional<Film> existedFilm = filmRepositoryImpl.findById(getTestFilm1().getId());
         assertThat(existedFilm).isNotEmpty();
 
