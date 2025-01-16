@@ -174,8 +174,7 @@ public class UserControllerIntegrationTest extends AbstractApplicationMvcIntegra
     @Test
     @SneakyThrows
     void whenCreateUserBirthdayIsInTheFutureThenReturn400() {
-        User user = new User("user@yandex.ru", "user", "User",
-                LocalDate.now().plusYears(1).withMonth(1).withDayOfMonth(1));
+        User user = new User("user@yandex.ru", "login login", "User", LocalDate.of(2025, 2, 1));
         String content = serialize(user);
 
         MvcResult result = mockMvc.perform(post("/users")
