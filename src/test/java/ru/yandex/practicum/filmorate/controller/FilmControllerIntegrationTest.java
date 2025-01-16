@@ -9,8 +9,11 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MvcResult;
 import ru.yandex.practicum.filmorate.model.*;
+import ru.yandex.practicum.filmorate.repository.DirectorRepository;
+import ru.yandex.practicum.filmorate.repository.DirectorRepositoryImpl;
 import ru.yandex.practicum.filmorate.repository.FilmRepository;
 import ru.yandex.practicum.filmorate.repository.UserRepository;
+import ru.yandex.practicum.filmorate.service.DirectorServiceImpl;
 import ru.yandex.practicum.filmorate.service.UserServiceImpl;
 
 import java.time.LocalDate;
@@ -38,12 +41,29 @@ public class FilmControllerIntegrationTest extends AbstractApplicationMvcIntegra
     private UserRepository userRepository;
 
     @Autowired
+    @Qualifier("directorRepositoryImpl")
+    private DirectorRepository directorRepository;
+
+    @Autowired
     UserServiceImpl userServiceImpl;
 
     @BeforeEach
     public void setUp() {
         filmRepository.deleteAll();
         userRepository.deleteAll();
+        directorRepository.deleteAll();
+    }
+
+    private static Director getTestDirector1() {
+        return new Director(1,"Кристофер Нолан");
+    }
+
+    private static Director getTestDirector2() {
+        return new Director(2,"Лилли Вачовски");
+    }
+
+    private static Director getTestDirector3() {
+        return new Director(3,"Лана Вачовски");
     }
 
     private static Film getTestFilm1() {
@@ -54,9 +74,6 @@ public class FilmControllerIntegrationTest extends AbstractApplicationMvcIntegra
         film.setGenres(new HashSet<>(Set.of(
                 new Genre(4, "Триллер"),
                 new Genre(1, "Комедия")
-        )));
-        film.setDirectors(new HashSet<>(Set.of(
-                new Director(1,"Кристофер Нолан")
         )));
 
         return film;
@@ -70,10 +87,6 @@ public class FilmControllerIntegrationTest extends AbstractApplicationMvcIntegra
         film.setGenres(new HashSet<>(Set.of(
                 new Genre(4, "Триллер")
         )));
-        film.setDirectors(new HashSet<>(Set.of(
-                new Director(2,"Лилли Вачовски"),
-                new Director(3,"Лана Вачовски")
-        )));
         film.setLikes(2);
 
         return film;
@@ -86,9 +99,6 @@ public class FilmControllerIntegrationTest extends AbstractApplicationMvcIntegra
         film.setMpa(new Mpa(3, "PG-13"));
         film.setGenres(new HashSet<>(Set.of(
                 new Genre(5, "Документальный")
-        )));
-        film.setDirectors(new HashSet<>(Set.of(
-                new Director(1,"Кристофер Нолан")
         )));
         film.setLikes(1);
 
@@ -117,7 +127,6 @@ public class FilmControllerIntegrationTest extends AbstractApplicationMvcIntegra
         assertTrue(filmController.getFilms().isEmpty());
 
         Film film1 = getTestFilm1();
-
         Film film2 = getTestFilm2();
 
         filmController.create(film1);
@@ -149,7 +158,7 @@ public class FilmControllerIntegrationTest extends AbstractApplicationMvcIntegra
                 .andReturn();
 
         Film filmFromResponse = deserialize(result, Film.class);
-        assertEquals(film.getName(), filmFromResponse.getName());
+                assertEquals(film.getName(), filmFromResponse.getName());
         assertEquals(film.getDescription(), filmFromResponse.getDescription());
         assertEquals(1, filmController.getFilms().size());
     }
@@ -354,13 +363,22 @@ public class FilmControllerIntegrationTest extends AbstractApplicationMvcIntegra
         Film film3 = getTestFilm3();
         User user = getTestUser1();
 
+        Director director1 = directorRepository.findById(1).orElse(directorRepository.create(getTestDirector1()));
+        Director director2 = directorRepository.findById(2).orElse(directorRepository.create(getTestDirector2()));
+        Director director3 = directorRepository.findById(3).orElse(directorRepository.create(getTestDirector3()));
+
+        film1.setDirectors(new HashSet<>(Set.of(director1)));
+        film2.setDirectors(new HashSet<>(Set.of(director2)));
+        film2.setDirectors(new HashSet<>(Set.of(director3)));
+        film3.setDirectors(new HashSet<>(Set.of(director1)));
+
         filmController.create(film1);
         filmController.create(film2);
         filmController.create(film3);
         userServiceImpl.create(user);
         filmController.like(film3.getId(), user.getId());
 
-        Collection<Film> films = filmController.getDirectorFilms(1, "likes");
+        Collection<Film> films = filmController.getDirectorFilms(director1.getId(), "likes");
 
         assertThat(Objects.equals(films.stream().findFirst().orElse(null), film3)).isTrue();
     }
@@ -374,11 +392,20 @@ public class FilmControllerIntegrationTest extends AbstractApplicationMvcIntegra
         Film film2 = getTestFilm2();
         Film film3 = getTestFilm3();
 
+        Director director1 = directorRepository.findById(1).orElse(directorRepository.create(getTestDirector1()));
+        Director director2 = directorRepository.findById(2).orElse(directorRepository.create(getTestDirector2()));
+        Director director3 = directorRepository.findById(3).orElse(directorRepository.create(getTestDirector3()));
+
+        film1.setDirectors(new HashSet<>(Set.of(director1)));
+        film2.setDirectors(new HashSet<>(Set.of(director2)));
+        film2.setDirectors(new HashSet<>(Set.of(director3)));
+        film3.setDirectors(new HashSet<>(Set.of(director1)));
+
         filmController.create(film1);
         filmController.create(film2);
         filmController.create(film3);
 
-        Collection<Film> films = filmController.getDirectorFilms(1, "year");
+        Collection<Film> films = filmController.getDirectorFilms(director1.getId(), "year");
 
         assertThat(Objects.equals(films.stream().findFirst().orElse(null), film1)).isTrue();
     }
