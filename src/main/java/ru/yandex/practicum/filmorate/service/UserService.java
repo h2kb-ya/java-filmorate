@@ -13,7 +13,7 @@ public interface UserService {
 
     User update(User user);
 
-    void deleteById(Integer userId);
+    void deleteById(Integer id);
 
     void addFriend(Integer userId, Integer friendId);
 
