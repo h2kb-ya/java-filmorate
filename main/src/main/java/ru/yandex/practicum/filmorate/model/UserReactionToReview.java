@@ -11,7 +11,7 @@ import lombok.Setter;
 @EqualsAndHashCode
 public class UserReactionToReview {
 
-    private Long reactionId;
+    private Integer reactionId;
     private Integer userId;
     private Integer reviewId;
     private String reaction;

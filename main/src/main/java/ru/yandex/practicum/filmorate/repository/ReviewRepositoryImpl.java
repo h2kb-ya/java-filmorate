@@ -31,7 +31,7 @@ public class ReviewRepositoryImpl implements ReviewRepository {
             """;
     private static final String UPDATE_CURR_REVIEW = """
             UPDATE reviews
-            SET content = ?, positive = ?, user_id = ?, film_id = ?
+            SET content = ?, positive = ?, user_id = ?, film_id = ?, useful = ?
             WHERE review_id = ?
             """;
     private static final String DELETE_CURR_REVIEW = """
@@ -43,22 +43,16 @@ public class ReviewRepositoryImpl implements ReviewRepository {
             FROM reviews
             WHERE review_id = ?
             """;
-    private static final String SELECT_ALL_REVIEWS_WITH_LIMIT = """
+    private static final String SELECT_REVIEWS_WITH_LIMIT = """
             SELECT review_id, content, positive, user_id, film_id, useful
             FROM reviews
-            ORDER BY useful DESC
-            LIMIT ?
-            """;
-    private static final String SELECT_REVIEWS_BY_FILM_ID_WITH_LIMIT = """
-            SELECT review_id, content, positive, user_id, film_id, useful
-            FROM reviews
-            WHERE film_id = ?
+            WHERE film_id = COALESCE( ? , film_id)
             ORDER BY useful DESC
             LIMIT ?
             """;
 
     @Override
-    public Review addNewReview(Review newReview) {
+    public Review addReview(Review newReview) {
         KeyHolder keyHolder = new GeneratedKeyHolder();
 
         PreparedStatementCreator preparedStatementCreator = con -> {
@@ -82,17 +76,18 @@ public class ReviewRepositoryImpl implements ReviewRepository {
             throw new DataIntegrityViolationException(errorMessage);
         }
 
-        return getReviewById(reviewId);
+        return getReview(reviewId);
     }
 
     @Override
-    public Review updateCurrentReview(Review currentReview) {
+    public Review updateReview(Review currentReview) {
         try {
             jdbcTemplate.update(UPDATE_CURR_REVIEW,
                     currentReview.getContent(),
                     currentReview.getIsPositive(),
                     currentReview.getUserId(),
                     currentReview.getFilmId(),
+                    currentReview.getUseful(),
                     currentReview.getReviewId()
             );
         } catch (DataAccessException e) {
@@ -101,11 +96,11 @@ public class ReviewRepositoryImpl implements ReviewRepository {
             throw new DataIntegrityViolationException(errorMessage, e.getCause());
         }
 
-        return getReviewById(currentReview.getReviewId());
+        return getReview(currentReview.getReviewId());
     }
 
     @Override
-    public void deleteCurrentReview(Integer reviewId) {
+    public void deleteReview(Integer reviewId) {
         try {
             jdbcTemplate.update(DELETE_CURR_REVIEW, reviewId);
         } catch (DataAccessException e) {
@@ -116,7 +111,7 @@ public class ReviewRepositoryImpl implements ReviewRepository {
     }
 
     @Override
-    public Review getReviewById(Integer reviewId) {
+    public Review getReview(Integer reviewId) {
         try {
             return jdbcTemplate.queryForObject(SELECT_REVIEW_BY_ID, reviewRowMapper, reviewId);
         } catch (EmptyResultDataAccessException ignored) {
@@ -125,23 +120,12 @@ public class ReviewRepositoryImpl implements ReviewRepository {
     }
 
     @Override
-    public Collection<Review> getReviewsList(Integer count) {
+    public Collection<Review> getReviews(Integer filmId, Integer count) {
         try {
-            return jdbcTemplate.queryForStream(SELECT_ALL_REVIEWS_WITH_LIMIT, reviewRowMapper, count).toList();
-        } catch (DataAccessException e) {
-            final String errorMessage = "Не удалось получить список отзывов.";
-            log.error(errorMessage);
-            throw new DataIntegrityViolationException(errorMessage, e.getCause());
-        }
-    }
-
-    @Override
-    public Collection<Review> getReviewsListByFilmId(Integer filmId, Integer count) {
-        try {
-            return jdbcTemplate.queryForStream(SELECT_REVIEWS_BY_FILM_ID_WITH_LIMIT, reviewRowMapper, filmId, count)
+            return jdbcTemplate.queryForStream(SELECT_REVIEWS_WITH_LIMIT, reviewRowMapper, filmId, count)
                     .toList();
         } catch (DataAccessException e) {
-            final String errorMessage = "Не удалось получить список отзывов на фильм с id=" + filmId;
+            final String errorMessage = "Не удалось получить список отзывов.";
             log.error(errorMessage);
             throw new DataIntegrityViolationException(errorMessage, e.getCause());
         }

@@ -57,9 +57,9 @@ public class UserReactionToReviewRepositoryImpl implements UserReactionToReviewR
         };
 
         jdbcTemplate.update(preparedStatementCreator, keyHolder);
-        reaction.setReactionId(Objects.requireNonNull(keyHolder.getKey()).longValue());
+        reaction.setReactionId(Objects.requireNonNull(keyHolder.getKey()).intValue());
 
-        final Long reactionId = reaction.getReactionId();
+        final Integer reactionId = reaction.getReactionId();
 
         if (reactionId == null) {
             final String errorMessage = "Не удалось сохранить реакцию: " + reaction;
