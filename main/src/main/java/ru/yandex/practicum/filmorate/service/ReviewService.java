@@ -13,7 +13,7 @@ public interface ReviewService {
     Collection<Review> getReviewsList(Integer filmId, Integer count);
     Review putLikeToReview(Integer reviewId, Integer userId);
     Review putDislikeToReview(Integer reviewId, Integer userId);
-    void deleteLikeFromReview(Integer reviewId, Integer userId);
-    void deleteDislikeFromReview(Integer reviewId, Integer userId);
+    Review deleteLikeFromReview(Integer reviewId, Integer userId);
+    Review deleteDislikeFromReview(Integer reviewId, Integer userId);
 
 }
