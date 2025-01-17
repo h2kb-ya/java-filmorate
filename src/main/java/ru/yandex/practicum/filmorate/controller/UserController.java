@@ -27,6 +27,11 @@ public class UserController {
         return userService.getUsers();
     }
 
+    @GetMapping("/{id}")
+    public User getUser(@PathVariable(name = "id") @Positive Integer id) {
+        return userService.get(id);
+    }
+
     @PostMapping
     public User create(@RequestBody @Valid final User user) {
         return userService.create(user);
@@ -35,6 +40,11 @@ public class UserController {
     @PutMapping
     public User update(@RequestBody @Valid final User user) {
         return userService.update(user);
+    }
+
+    @DeleteMapping("/{id}")
+    public void deleteById(@PathVariable(name = "id") @Positive final Integer id) {
+        userService.deleteById(id);
     }
 
     @PutMapping("/{id}/friends/{friendId}")

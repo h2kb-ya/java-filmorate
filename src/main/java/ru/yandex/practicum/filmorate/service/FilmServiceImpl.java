@@ -89,6 +89,13 @@ public class FilmServiceImpl implements FilmService {
     }
 
     @Override
+    public void deleteById(Integer id) {
+        filmRepository.findById(id).ifPresentOrElse(film -> filmRepository.deleteById(id), () -> {
+            throw new NotFoundException("Фильм с id - " + id + " не найден.");
+        });
+    }
+
+    @Override
     public void like(final Integer id, final Integer userId) {
         User user = userService.get(userId);
 

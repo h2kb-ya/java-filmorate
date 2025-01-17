@@ -44,6 +44,15 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public void deleteById(Integer id) {
+        if (userExists(id)) {
+            userRepository.deleteById(id);
+        } else {
+            throw new NotFoundException("Пользователь с id - " + id + "не найден.");
+        }
+    }
+
+    @Override
     public void addFriend(final Integer userId, final Integer friendId) {
         if (userExists(userId) && userExists(friendId)) {
             friendshipRepository.addFriend(userId, friendId);
