@@ -31,7 +31,7 @@ public class FilmRepositoryImpl implements FilmRepository {
     @Override
     public Film create(Film film) {
         String sqlQuery = "INSERT INTO films (name, description, release_date, duration, mpa_rating_id) " +
-                "VALUES (:name, :description, :release_date, :duration, :mpa_rating_id)";
+                          "VALUES (:name, :description, :release_date, :duration, :mpa_rating_id)";
         KeyHolder keyHolder = new GeneratedKeyHolder();
 
         log.info("Creating new film: {}", film);
@@ -62,7 +62,7 @@ public class FilmRepositoryImpl implements FilmRepository {
     @Override
     public Film update(Film film) {
         String sqlQuery = "UPDATE films SET name = :name, description = :description, release_date = :release_date, " +
-                "duration = :duration, mpa_rating_id = :mpa_rating_id WHERE id = :id";
+                          "duration = :duration, mpa_rating_id = :mpa_rating_id WHERE id = :id";
 
         filmDirectorRepository.deleteFilmDirectors(film.getId());
 
@@ -174,8 +174,45 @@ public class FilmRepositoryImpl implements FilmRepository {
 
     @Override
     public Collection<Film> getDirectorFilms(Integer directorId, String sortBy) {
-        String sqlQuery = """
-                WITH DirectorFilms AS (
+        String sqlQuery = getSqlQuery();
+
+        sqlQuery = sqlQuery + "d.id = ? ORDER BY ";
+
+        if (sortBy.equals("year")) {
+            sqlQuery = sqlQuery + "sf.release_date ASC;";
+        } else if (sortBy.equals("likes")) {
+            sqlQuery = sqlQuery + "sf.likes DESC;";
+        } else {
+            throw new NotFoundException("Тип сортировки " + sortBy + " не найден!");
+        }
+
+        log.info("Getting director films");
+        return jdbcTemplate.query(sqlQuery, filmsExtractor, directorId);
+    }
+
+    @Override
+    public Collection<Film> search(String query, String by) {
+        String sqlQuery = getSqlQuery();
+
+        String byDirector = "LOWER(d.name) LIKE '%" + query.toLowerCase() + "%'";
+        String byTitle = "LOWER(sf.film_name) LIKE '%" + query.toLowerCase() + "%'";
+
+        sqlQuery = switch (by) {
+            case "director" -> sqlQuery + byDirector;
+            case "title" -> sqlQuery + byTitle;
+            case "title,director", "director,title" -> sqlQuery + byDirector + " OR " + byTitle;
+            default -> throw new NotFoundException("Неверный параметр поиска: " + by + "!");
+        };
+
+        sqlQuery += "ORDER BY sf.likes DESC;";
+
+        log.info("Getting search");
+        return jdbcTemplate.query(sqlQuery, filmsExtractor);
+    }
+
+    private static String getSqlQuery() {
+        return """
+                WITH SortedFilms AS (
                     SELECT f.id AS film_id, f.name AS film_name, f.description, f.release_date, f.duration,
                             mpa.id AS mpa_id, mpa.name AS mpa_name,
                             COUNT(fl.film_id) AS likes
@@ -185,30 +222,17 @@ public class FilmRepositoryImpl implements FilmRepository {
                     GROUP BY f.id, f.name, f.description, f.release_date, f.duration, mpa.id, mpa.name
                     ORDER BY likes DESC
                 )
-                SELECT df.film_id, df.film_name, df.description, df.release_date, df.duration,
-                        df.mpa_id, df.mpa_name,
+                SELECT sf.film_id, sf.film_name, sf.description, sf.release_date, sf.duration,
+                        sf.mpa_id, sf.mpa_name,
                         g.id AS genre_id, g.name AS genre_name,
                         d.id AS director_id, d.name AS director_name,
-                        df.likes
-                FROM DirectorFilms df
-                        LEFT JOIN film_genres fg ON df.film_id = fg.film_id
+                        sf.likes
+                FROM SortedFilms sf
+                        LEFT JOIN film_genres fg ON sf.film_id = fg.film_id
                         LEFT JOIN genres g ON g.id = fg.genre_id
-                        LEFT JOIN film_directors fd ON df.film_id = fd.film_id
+                        LEFT JOIN film_directors fd ON sf.film_id = fd.film_id
                         LEFT JOIN directors d ON d.id = fd.director_id
-                WHERE d.id = ?
-                ORDER BY
+                WHERE
                 """;
-
-        String sql;
-        if (sortBy.equals("year")) {
-            sql = sqlQuery + "df.release_date ASC";
-        } else if (sortBy.equals("likes")) {
-            sql = sqlQuery + "df.likes DESC";
-        } else {
-            throw new NotFoundException("Тип сортировки " + sortBy + " не найден!");
-        }
-
-        log.info("Getting director films");
-        return jdbcTemplate.query(sql, filmsExtractor, directorId);
     }
 }

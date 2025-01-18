@@ -61,6 +61,11 @@ public class InMemoryFilmRepositoryImpl implements FilmRepository {
     }
 
     @Override
+    public Collection<Film> search(String query, String by) {
+        return List.of();
+    }
+
+    @Override
     public void deleteAll() {
         films.clear();
     }
