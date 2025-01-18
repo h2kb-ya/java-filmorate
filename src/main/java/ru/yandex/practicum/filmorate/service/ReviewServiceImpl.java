@@ -7,9 +7,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.DataDuplicationException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
-import ru.yandex.practicum.filmorate.model.ReactionTypes;
-import ru.yandex.practicum.filmorate.model.Review;
-import ru.yandex.practicum.filmorate.model.UserReactionToReview;
+import ru.yandex.practicum.filmorate.model.*;
 import ru.yandex.practicum.filmorate.repository.ReviewRepository;
 import ru.yandex.practicum.filmorate.repository.UserReactionToReviewRepository;
 
@@ -31,6 +29,7 @@ public class ReviewServiceImpl implements ReviewService {
 
     private final FilmService filmService;
     private final UserService userService;
+    private final EventService eventService;
 
     @Override
     public Review addNewReview(Review newReview) {
@@ -39,6 +38,7 @@ public class ReviewServiceImpl implements ReviewService {
         newReview.setUseful(DEFAULT_REVIEW_USEFUL_RATE);
         final Review review = reviewRepository.addReview(newReview);
         log.info("Добавлен отзыв: {}", review);
+        eventService.addEvent(review.getUserId(), EventTypes.REVIEW, OperationTypes.ADD, review.getReviewId());
         return review;
     }
 
@@ -48,6 +48,7 @@ public class ReviewServiceImpl implements ReviewService {
         review.setUseful(currentReview.getUseful());
         final Review updatedReview = reviewRepository.updateReview(review);
         log.info("Обновлен отзыв: {}", updatedReview);
+        eventService.addEvent(updatedReview.getUserId(), EventTypes.REVIEW, OperationTypes.UPDATE, updatedReview.getReviewId());
         return updatedReview;
     }
 
@@ -56,6 +57,7 @@ public class ReviewServiceImpl implements ReviewService {
         final Review review = getReviewById(reviewId);
         reviewRepository.deleteReview(reviewId);
         log.info("Удален отзыв: {}", review);
+        eventService.addEvent(review.getUserId(), EventTypes.REVIEW, OperationTypes.REMOVE, reviewId);
         return review;
     }
 

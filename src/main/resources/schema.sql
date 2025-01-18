@@ -9,6 +9,7 @@ DROP TABLE IF EXISTS reviews CASCADE;
 DROP TABLE IF EXISTS user_reactions_to_reviews CASCADE;
 DROP TABLE IF EXISTS film_directors CASCADE;
 DROP TABLE IF EXISTS directors CASCADE;
+DROP TABLE IF EXISTS users_feed CASCADE;
 
 CREATE TABLE IF NOT EXISTS mpa_ratings (
                              id SERIAL PRIMARY KEY,
@@ -95,3 +96,13 @@ CREATE TABLE IF NOT EXISTS film_directors (
                             FOREIGN KEY (film_id) REFERENCES films(id) ON DELETE CASCADE,
                             FOREIGN KEY (director_id) REFERENCES directors(id) ON DELETE CASCADE
  );
+
+CREATE TABLE IF NOT EXISTS users_feed (
+    event_id    BIGINT       AUTO_INCREMENT PRIMARY KEY,
+    timestamp   TIMESTAMP    NOT NULL,
+    user_id     INTEGER      NOT NULL,
+    event_type  VARCHAR(20)  NOT NULL,
+    operation   VARCHAR(20)  NOT NULL,
+    entity_id   INTEGER      NOT NULL,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
