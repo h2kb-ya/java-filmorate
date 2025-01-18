@@ -23,4 +23,6 @@ public interface FilmService {
     Collection<Film> getPopular(Integer count);
 
     Collection<Film> getDirectorFilms(Integer id, String sortBy);
+
+    Collection<Film> search(String query, String by);
 }
