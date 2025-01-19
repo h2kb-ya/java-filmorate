@@ -3,8 +3,6 @@ package ru.yandex.practicum.filmorate.service;
 import java.util.Collection;
 
 import ru.yandex.practicum.filmorate.dto.EventDto;
-import ru.yandex.practicum.filmorate.model.EventTypes;
-import ru.yandex.practicum.filmorate.model.OperationTypes;
 import ru.yandex.practicum.filmorate.model.User;
 
 public interface UserService {
