@@ -1,8 +1,7 @@
 package ru.yandex.practicum.filmorate.service;
 
-import ru.yandex.practicum.filmorate.model.Film;
-
 import java.util.Collection;
+import ru.yandex.practicum.filmorate.model.Film;
 
 public interface FilmService {
 
@@ -21,6 +20,4 @@ public interface FilmService {
     void dislike(Integer id, Integer userId);
 
     Collection<Film> getPopular(Integer count);
-
-    Collection<Film> getDirectorFilms(Integer id, String sortBy);
 }

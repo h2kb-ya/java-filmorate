@@ -10,8 +10,6 @@ DELETE
 FROM genres;
 DELETE
 FROM mpa_ratings;
-DELETE
-FROM directors;
 
 INSERT INTO mpa_ratings (name)
 VALUES ('G'),
@@ -63,16 +61,3 @@ VALUES (1, 2, 'PENDING'),
        (1, 3, 'PENDING'),
        (2, 3, 'PENDING'),
        (2, 4, 'PENDING');
-
-INSERT INTO directors (name)
-VALUES ('Кристофер Нолан'),
-       ('Лилли Вачовски'),
-       ('Лана Вачовски'),
-       ('Фрэнк Дарабонт');
-
-INSERT INTO film_directors (film_id, director_id)
-VALUES (1, 1),
-       (2, 2),
-       (2, 3),
-       (3, 1),
-       (4, 4);
