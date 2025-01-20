@@ -40,6 +40,4 @@ public class DirectorController {
     public void removeById(@PathVariable @Positive final Integer id) {
         directorService.removeById(id);
     }
-
-    public void remove() {}
 }
