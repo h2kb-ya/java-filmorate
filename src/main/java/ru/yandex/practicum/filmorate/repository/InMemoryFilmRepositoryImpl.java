@@ -5,6 +5,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -56,6 +57,11 @@ public class InMemoryFilmRepositoryImpl implements FilmRepository {
                 .sorted(Comparator.comparingInt(Film::getLikes).reversed())
                 .limit(count)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public Collection<Film> findFilmsByIds(Set<Integer> filmIds) {
+        return null;
     }
 
     @Override

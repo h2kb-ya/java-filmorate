@@ -24,7 +24,7 @@ public class FilmLikesServiceImpl implements FilmLikesService {
         filmLikesRepository.dislike(film, user);
     }
 
-    public Collection<Integer> getCommonFilms(Integer firstUserId, Integer secondUserId) {
-        return filmLikesRepository.getCommonFilms(firstUserId, secondUserId);
+    public Collection<Integer> getCommonFilmsIds(Integer firstUserId, Integer secondUserId) {
+        return filmLikesRepository.getCommonFilmsIds(firstUserId, secondUserId);
     }
 }

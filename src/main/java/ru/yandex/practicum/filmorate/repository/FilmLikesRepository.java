@@ -11,5 +11,5 @@ public interface FilmLikesRepository {
 
     void dislike(Film film, User user);
 
-    Collection<Integer> getCommonFilms(Integer firstUserId, Integer secondUserId);
+    Collection<Integer> getCommonFilmsIds(Integer firstUserId, Integer secondUserId);
 }

@@ -35,7 +35,7 @@ public class FilmLikesRepositoryImpl implements FilmLikesRepository {
     }
 
     @Override
-    public List<Integer> getCommonFilms(Integer firstUserId, Integer secondUserId) {
+    public List<Integer> getCommonFilmsIds(Integer firstUserId, Integer secondUserId) {
         String sqlQuery = """
                     SELECT fl1.film_id
                     FROM film_likes fl1

@@ -102,15 +102,11 @@ public class FilmServiceImpl implements FilmService {
     }
 
     public Collection<Film> getCommonFilms(Integer firstUserId, Integer secondUserId) {
-        Set<Integer> commonFilmsIds = filmLikesService.getCommonFilms(firstUserId, secondUserId).stream().collect(Collectors.toSet());
+        Set<Integer> commonFilmsIds = filmLikesService.getCommonFilmsIds(firstUserId, secondUserId).stream().collect(Collectors.toSet());
 
-        Collection<Film> getAllFilms = filmRepository.findAll();
+        Collection<Film> commonFilms = filmRepository.findFilmsByIds(commonFilmsIds);
 
-        if (commonFilmsIds.isEmpty()) {
-            return List.of();
-        }
-
-        return getAllFilms.stream()
+        return commonFilms.stream()
                 .filter(film -> commonFilmsIds.contains(film.getId()))
                 .sorted((film1, film2) -> Integer.compare(film2.getLikes(), film1.getLikes()))
                 .collect(Collectors.toList());
