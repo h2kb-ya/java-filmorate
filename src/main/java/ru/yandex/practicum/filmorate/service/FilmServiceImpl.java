@@ -1,7 +1,6 @@
 package ru.yandex.practicum.filmorate.service;
 
-import java.util.Collection;
-import java.util.List;
+import java.util.HashSet;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -12,6 +11,11 @@ import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.repository.FilmRepository;
+
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import static ru.yandex.practicum.filmorate.util.FilmorateConstants.DEFAULT_COUNT_VALUE_FOR_GETTING_POPULAR_FILMS;
 
@@ -96,6 +100,17 @@ public class FilmServiceImpl implements FilmService {
                 .orElseThrow(() -> new NotFoundException("Фильм c id " + id + " не найден."));
 
         filmLikesService.dislike(film, user);
+    }
+
+    public Collection<Film> getCommonFilms(Integer firstUserId, Integer secondUserId) {
+        Set<Integer> commonFilmsIds = new HashSet<>(filmLikesService.getCommonFilmsIds(firstUserId, secondUserId));
+
+        Collection<Film> commonFilms = filmRepository.findFilmsByIds(commonFilmsIds);
+
+        return commonFilms.stream()
+                .filter(film -> commonFilmsIds.contains(film.getId()))
+                .sorted((film1, film2) -> Integer.compare(film2.getLikes(), film1.getLikes()))
+                .collect(Collectors.toList());
     }
 
     @Override

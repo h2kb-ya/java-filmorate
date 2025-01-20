@@ -1,8 +1,10 @@
 package ru.yandex.practicum.filmorate.repository;
 
+import ru.yandex.practicum.filmorate.model.Film;
+
 import java.util.Collection;
 import java.util.Optional;
-import ru.yandex.practicum.filmorate.model.Film;
+import java.util.Set;
 
 public interface FilmRepository {
 
@@ -19,4 +21,6 @@ public interface FilmRepository {
     Optional<Film> findById(int id);
 
     Collection<Film> getPopular(int count, Integer genreId, Integer year);
+
+    Collection<Film> findFilmsByIds(Set<Integer> filmIds);
 }

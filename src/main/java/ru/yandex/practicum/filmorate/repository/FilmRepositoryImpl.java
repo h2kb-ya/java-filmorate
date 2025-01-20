@@ -18,6 +18,10 @@ import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.repository.mapper.FilmExtractor;
 import ru.yandex.practicum.filmorate.repository.mapper.FilmsExtractor;
 
+import java.util.Collection;
+import java.util.Set;
+import java.util.Collections;
+
 @Slf4j
 @Repository
 @RequiredArgsConstructor
@@ -126,6 +130,33 @@ public class FilmRepositoryImpl implements FilmRepository {
 
         log.info("Finding film by id {}", id);
         return Optional.ofNullable(jdbcTemplate.query(sqlQuery, filmExtractor, id));
+    }
+
+    @Override
+    public Collection<Film> findFilmsByIds(Set<Integer> filmIds) {
+        if (filmIds.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        String sqlQuery = """
+                SELECT f.id AS film_id, f.name AS film_name, f.description, f.release_date, f.duration,
+                       mpa.id AS mpa_id, mpa.name AS mpa_name,
+                       g.id AS genre_id, g.name AS genre_name,
+                       COUNT(fl.film_id) AS likes
+                FROM films f
+                JOIN mpa_ratings mpa ON f.mpa_rating_id = mpa.id
+                LEFT JOIN film_genres fg ON f.id = fg.film_id
+                LEFT JOIN genres g ON g.id = fg.genre_id
+                LEFT JOIN film_likes fl ON f.id = fl.film_id
+                WHERE f.id IN (:filmIds)
+                GROUP BY f.id, f.name, f.description, f.release_date, f.duration, mpa.id, mpa.name, g.id, g.name
+                """;
+
+        MapSqlParameterSource parameters = new MapSqlParameterSource();
+        parameters.addValue("filmIds", filmIds);
+
+        log.info("Finding films by IDs: {}", filmIds);
+        return namedParameterJdbcOperations.query(sqlQuery, parameters, filmsExtractor);
     }
 
     @Override

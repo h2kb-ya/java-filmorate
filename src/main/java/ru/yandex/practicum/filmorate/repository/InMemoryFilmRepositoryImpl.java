@@ -8,6 +8,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 @Slf4j
 @Component
@@ -50,6 +51,11 @@ public class InMemoryFilmRepositoryImpl implements FilmRepository {
 
     @Override
     public Collection<Film> getPopular(int count, Integer genreId, Integer year) {
+        return null;
+    }
+
+    @Override
+    public Collection<Film> findFilmsByIds(Set<Integer> filmIds) {
         return null;
     }
 
