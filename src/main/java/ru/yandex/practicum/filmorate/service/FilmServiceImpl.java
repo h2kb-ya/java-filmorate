@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.service;
 
+import java.util.HashSet;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -102,7 +103,7 @@ public class FilmServiceImpl implements FilmService {
     }
 
     public Collection<Film> getCommonFilms(Integer firstUserId, Integer secondUserId) {
-        Set<Integer> commonFilmsIds = filmLikesService.getCommonFilmsIds(firstUserId, secondUserId).stream().collect(Collectors.toSet());
+        Set<Integer> commonFilmsIds = new HashSet<>(filmLikesService.getCommonFilmsIds(firstUserId, secondUserId));
 
         Collection<Film> commonFilms = filmRepository.findFilmsByIds(commonFilmsIds);
 
@@ -113,11 +114,11 @@ public class FilmServiceImpl implements FilmService {
     }
 
     @Override
-    public Collection<Film> getPopular(Integer count) {
+    public Collection<Film> getPopular(int count, Integer genreId, Integer year) {
         if (count == 0) {
-            count = Integer.valueOf(DEFAULT_COUNT_VALUE_FOR_GETTING_POPULAR_FILMS);
+            count = Integer.parseInt(DEFAULT_COUNT_VALUE_FOR_GETTING_POPULAR_FILMS);
         }
 
-        return filmRepository.getPopular(count);
+        return filmRepository.getPopular(count, genreId, year);
     }
 }

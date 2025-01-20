@@ -20,7 +20,7 @@ public interface FilmRepository {
 
     Optional<Film> findById(int id);
 
-    Collection<Film> getPopular(int count);
+    Collection<Film> getPopular(int count, Integer genreId, Integer year);
 
     Collection<Film> findFilmsByIds(Set<Integer> filmIds);
 }

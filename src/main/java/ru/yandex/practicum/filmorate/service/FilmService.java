@@ -19,7 +19,7 @@ public interface FilmService {
 
     void dislike(Integer id, Integer userId);
 
-    Collection<Film> getCommonFilms(Integer firstUserId, Integer secondUserId);
+    Collection<Film> getPopular(int count, Integer genreId, Integer year);
 
-    Collection<Film> getPopular(Integer count);
+    Collection<Film> getCommonFilms(Integer firstUserId, Integer secondUserId);
 }
