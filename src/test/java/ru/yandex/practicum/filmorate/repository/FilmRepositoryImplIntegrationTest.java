@@ -1,25 +1,31 @@
 package ru.yandex.practicum.filmorate.repository;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
-import org.springframework.context.annotation.ComponentScan;
-import ru.yandex.practicum.filmorate.model.Director;
+import org.springframework.context.annotation.Import;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
-
-import java.time.LocalDate;
-import java.util.*;
-
-import static org.assertj.core.api.Assertions.assertThat;
+import ru.yandex.practicum.filmorate.repository.mapper.FilmExtractor;
+import ru.yandex.practicum.filmorate.repository.mapper.FilmMapper;
+import ru.yandex.practicum.filmorate.repository.mapper.FilmsExtractor;
 
 @JdbcTest
 @AutoConfigureTestDatabase
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
-@ComponentScan("ru/yandex/practicum/filmorate/*")
+@Import({FilmRepositoryImpl.class, FilmExtractor.class, FilmsExtractor.class, FilmMapper.class,
+        FilmGenreRepositoryImpl.class})
 public class FilmRepositoryImplIntegrationTest {
 
     private final FilmRepositoryImpl filmRepositoryImpl;
@@ -32,9 +38,6 @@ public class FilmRepositoryImplIntegrationTest {
         film.setGenres(new HashSet<>(Set.of(
                 new Genre(4, "Триллер"),
                 new Genre(1, "Комедия")
-        )));
-        film.setDirectors(new HashSet<>(Set.of(
-                new Director(1, "Кристофер Нолан")
         )));
         film.setLikes(4);
 
@@ -49,10 +52,6 @@ public class FilmRepositoryImplIntegrationTest {
         film.setGenres(new HashSet<>(Set.of(
                 new Genre(4, "Триллер")
         )));
-        film.setDirectors(new HashSet<>(Set.of(
-                new Director(2, "Лилли Вачовски"),
-                new Director(3, "Лана Вачовски")
-        )));
         film.setLikes(2);
 
         return film;
@@ -66,9 +65,6 @@ public class FilmRepositoryImplIntegrationTest {
         film.setGenres(new HashSet<>(Set.of(
                 new Genre(5, "Документальный")
         )));
-        film.setDirectors(new HashSet<>(Set.of(
-                new Director(1, "Кристофер Нолан")
-        )));
         film.setLikes(1);
 
         return film;
@@ -81,9 +77,6 @@ public class FilmRepositoryImplIntegrationTest {
         film.setMpa(new Mpa(4, "R"));
         film.setGenres(new HashSet<>(Set.of(
                 new Genre(2, "Драма")
-        )));
-        film.setDirectors(new HashSet<>(Set.of(
-                new Director(4, "Фрэнк Дарабонт")
         )));
         film.setLikes(1);
 
@@ -139,11 +132,11 @@ public class FilmRepositoryImplIntegrationTest {
     }
 
     @Test
-    public void delete_filmExists_filmDeleted() {
+    public void deleteById_filmExists_filmDeleted() {
         Optional<Film> existedFilm = filmRepositoryImpl.findById(getTestFilm1().getId());
         assertThat(existedFilm).isNotEmpty();
 
-        filmRepositoryImpl.delete(getTestFilm1());
+        filmRepositoryImpl.deleteById(getTestFilm1().getId());
         existedFilm = filmRepositoryImpl.findById(getTestFilm1().getId());
         assertThat(existedFilm).isEmpty();
     }
@@ -160,26 +153,9 @@ public class FilmRepositoryImplIntegrationTest {
 
     @Test
     public void getPopular_useCount_returnPopularLimitByCount() {
-        List<Film> popularFilms = filmRepositoryImpl.getPopular(3);
+        List<Film> popularFilms = filmRepositoryImpl.getPopular(3, null, null);
 
         assertThat(popularFilms).isNotEmpty();
         assertThat(popularFilms.size()).isEqualTo(3);
-    }
-
-    @Test
-    public void getFilmsByDirectorIdSortedByYears() {
-        Collection<Film> directorFilms = filmRepositoryImpl.getDirectorFilms(1, "year");
-
-        assertThat(directorFilms).isNotEmpty();
-        assertThat(directorFilms.size()).isEqualTo(2);
-    }
-
-    @Test
-    public void getFilmsByDirectorIdSortedByLikes() {
-        Collection<Film> directorFilms = filmRepositoryImpl.getDirectorFilms(1, "likes");
-
-        assertThat(directorFilms).isNotEmpty();
-        assertThat(directorFilms.size()).isEqualTo(2);
-        assertThat(directorFilms.stream().findFirst()).isEqualTo(filmRepositoryImpl.findById(1));
     }
 }

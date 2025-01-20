@@ -3,22 +3,21 @@ package ru.yandex.practicum.filmorate.model;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
+import java.time.LocalDate;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 import ru.yandex.practicum.filmorate.validation.ReleaseDateAfter1895;
 
-import java.time.LocalDate;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-
 @Getter
 @Setter
-@ToString
 @EqualsAndHashCode
+@ToString
 public class Film {
 
     private Integer id;
@@ -38,8 +37,6 @@ public class Film {
     private int likes;
 
     private Set<Genre> genres = new HashSet<>();
-
-    private Set<Director> directors = new HashSet<>();
 
     private Mpa mpa;
 
