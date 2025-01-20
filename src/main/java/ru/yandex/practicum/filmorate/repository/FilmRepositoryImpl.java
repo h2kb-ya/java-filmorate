@@ -1,5 +1,9 @@
 package ru.yandex.practicum.filmorate.repository;
 
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -9,12 +13,9 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcOperations;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
-import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.repository.mapper.FilmExtractor;
 import ru.yandex.practicum.filmorate.repository.mapper.FilmsExtractor;
-
-import java.util.*;
 
 @Slf4j
 @Repository
@@ -24,7 +25,6 @@ public class FilmRepositoryImpl implements FilmRepository {
     private final JdbcTemplate jdbcTemplate;
     private final NamedParameterJdbcOperations namedParameterJdbcOperations;
     private final FilmGenreRepository filmGenreRepository;
-    private final FilmDirectorRepository filmDirectorRepository;
     private final FilmExtractor filmExtractor;
     private final FilmsExtractor filmsExtractor;
 
@@ -52,10 +52,6 @@ public class FilmRepositoryImpl implements FilmRepository {
             filmGenreRepository.add(film);
         }
 
-        if (!film.getDirectors().isEmpty()) {
-            filmDirectorRepository.setFilmDirectors(film.getId(), film.getDirectors());
-        }
-
         return film;
     }
 
@@ -63,9 +59,6 @@ public class FilmRepositoryImpl implements FilmRepository {
     public Film update(Film film) {
         String sqlQuery = "UPDATE films SET name = :name, description = :description, release_date = :release_date, " +
                 "duration = :duration, mpa_rating_id = :mpa_rating_id WHERE id = :id";
-
-        filmDirectorRepository.deleteFilmDirectors(film.getId());
-
         Map<String, Object> params = film.toMap();
         params.put("id", film.getId());
 
@@ -75,7 +68,6 @@ public class FilmRepositoryImpl implements FilmRepository {
         if (updatedRow == 0) {
             throw new DataIntegrityViolationException("He удалось обновить фильм: " + film);
         }
-        filmDirectorRepository.setFilmDirectors(film.getId(), film.getDirectors());
 
         return film;
     }
@@ -102,16 +94,13 @@ public class FilmRepositoryImpl implements FilmRepository {
                 SELECT f.id AS film_id, f.name AS film_name, f.description, f.release_date, f.duration,
                         mpa.id AS mpa_id, mpa.name AS mpa_name,
                         g.id AS genre_id, g.name AS genre_name,
-                        d.id AS director_id, d.name AS director_name,
                         COUNT(fl.film_id) AS likes
                 FROM films f
                 JOIN mpa_ratings mpa ON f.mpa_rating_id = mpa.id
                 LEFT JOIN film_genres fg ON f.id = fg.film_id
                 LEFT JOIN genres g ON g.id = fg.genre_id
-                LEFT JOIN film_directors fd ON f.id = fd.film_id
-                LEFT JOIN directors d ON d.id = fd.director_id
                 LEFT JOIN film_likes fl ON f.id = fl.film_id
-                GROUP BY f.id, f.name, f.description, f.release_date, f.duration, mpa.id, mpa.name, g.id, g.name, d.id, d.name
+                GROUP BY f.id, f.name, f.description, f.release_date, f.duration, mpa.id, mpa.name, g.id, g.name
                 """;
 
         log.info("Finding all films");
@@ -124,17 +113,14 @@ public class FilmRepositoryImpl implements FilmRepository {
                 SELECT f.id AS film_id, f.name AS film_name, f.description, f.release_date, f.duration,
                         mpa.id AS mpa_id, mpa.name AS mpa_name,
                         g.id AS genre_id, g.name AS genre_name,
-                        d.id AS director_id, d.name AS director_name,
                         COUNT(fl.film_id) AS likes
                 FROM films f
                 JOIN mpa_ratings mpa ON f.mpa_rating_id = mpa.id
                 LEFT JOIN film_genres fg ON f.id = fg.film_id
                 LEFT JOIN genres g ON g.id = fg.genre_id
-                LEFT JOIN film_directors fd ON f.id = fd.film_id
-                LEFT JOIN directors d ON d.id = fd.director_id
                 LEFT JOIN film_likes fl ON f.id = fl.film_id
                 WHERE f.id = ?
-                GROUP BY f.id, f.name, f.description, f.release_date, f.duration, mpa.id, mpa.name, g.id, g.name, d.id, d.name
+                GROUP BY f.id, f.name, f.description, f.release_date, f.duration, mpa.id, mpa.name, g.id, g.name
                 """;
 
         log.info("Finding film by id {}", id);
@@ -158,57 +144,14 @@ public class FilmRepositoryImpl implements FilmRepository {
                 SELECT pf.film_id, pf.film_name, pf.description, pf.release_date, pf.duration,
                         pf.mpa_id, pf.mpa_name,
                         g.id AS genre_id, g.name AS genre_name,
-                        d.id AS director_id, d.name AS director_name,
                         pf.likes
                 FROM PopularFilms pf
                         LEFT JOIN film_genres fg ON pf.film_id = fg.film_id
                         LEFT JOIN genres g ON g.id = fg.genre_id
-                        LEFT JOIN film_directors fd ON pf.film_id = fd.film_id
-                        LEFT JOIN directors d ON d.id = fd.director_id
                 ORDER BY pf.likes DESC, pf.film_id, g.id;
                 """;
 
         log.info("Getting popular films");
         return jdbcTemplate.query(sqlQuery, filmsExtractor, count);
-    }
-
-    @Override
-    public Collection<Film> getDirectorFilms(Integer directorId, String sortBy) {
-        String sqlQuery = """
-                WITH DirectorFilms AS (
-                    SELECT f.id AS film_id, f.name AS film_name, f.description, f.release_date, f.duration,
-                            mpa.id AS mpa_id, mpa.name AS mpa_name,
-                            COUNT(fl.film_id) AS likes
-                    FROM films f
-                            JOIN mpa_ratings mpa ON f.mpa_rating_id = mpa.id
-                            LEFT JOIN film_likes fl ON f.id = fl.film_id
-                    GROUP BY f.id, f.name, f.description, f.release_date, f.duration, mpa.id, mpa.name
-                    ORDER BY likes DESC
-                )
-                SELECT df.film_id, df.film_name, df.description, df.release_date, df.duration,
-                        df.mpa_id, df.mpa_name,
-                        g.id AS genre_id, g.name AS genre_name,
-                        d.id AS director_id, d.name AS director_name,
-                        df.likes
-                FROM DirectorFilms df
-                        LEFT JOIN film_genres fg ON df.film_id = fg.film_id
-                        LEFT JOIN genres g ON g.id = fg.genre_id
-                        LEFT JOIN film_directors fd ON df.film_id = fd.film_id
-                        LEFT JOIN directors d ON d.id = fd.director_id
-                WHERE d.id = ?
-                ORDER BY
-                """;
-
-        String sql;
-        if (sortBy.equals("year")) {
-            sql = sqlQuery + "df.release_date ASC";
-        } else if (sortBy.equals("likes")) {
-            sql = sqlQuery + "df.likes DESC";
-        } else {
-            throw new NotFoundException("Тип сортировки " + sortBy + " не найден!");
-        }
-
-        log.info("Getting director films");
-        return jdbcTemplate.query(sql, filmsExtractor, directorId);
     }
 }
