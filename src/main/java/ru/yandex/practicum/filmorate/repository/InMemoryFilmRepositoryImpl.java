@@ -4,10 +4,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.model.Film;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Component
@@ -49,8 +47,17 @@ public class InMemoryFilmRepositoryImpl implements FilmRepository {
     }
 
     @Override
-    public Collection<Film> getPopular(int count, Integer genreId, Integer year) {
-        return null;
+    public Collection<Film> getPopular(int count) {
+        return films.values()
+                .stream()
+                .sorted(Comparator.comparingInt(Film::getLikes).reversed())
+                .limit(count)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public Collection<Film> getDirectorFilms(Integer directorId, String sortBy) {
+        return List.of();
     }
 
     @Override
