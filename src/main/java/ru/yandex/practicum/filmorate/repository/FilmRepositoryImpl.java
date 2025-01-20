@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.HashMap;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -129,6 +130,9 @@ public class FilmRepositoryImpl implements FilmRepository {
 
     @Override
     public List<Film> getPopular(int count, Integer genreId, Integer year) {
+        Map<String, Object> params = new HashMap<>();
+        params.put("count", count);
+
         StringBuilder sqlBuilder = new StringBuilder("""
                 WITH PopularFilms AS (
                     SELECT f.id AS film_id, f.name AS film_name, f.description, f.release_date, f.duration,
@@ -139,48 +143,33 @@ public class FilmRepositoryImpl implements FilmRepository {
                            LEFT JOIN film_likes fl ON f.id = fl.film_id
                 """);
 
-        if (genreId != null) {
-            sqlBuilder.append("""
-                       JOIN film_genres fg ON f.id = fg.film_id
-                       WHERE fg.genre_id = ?
-                    """);
-        }
         if (year != null) {
-            if (genreId != null) {
-                sqlBuilder.append(" AND ");
-            } else {
-                sqlBuilder.append(" WHERE ");
-            }
-            sqlBuilder.append("EXTRACT(YEAR FROM f.release_date) = ? ");
+            sqlBuilder.append(" WHERE EXTRACT(YEAR FROM f.release_date) = :year ");
+            params.put("year", year);
         }
 
         sqlBuilder.append("""
-                       GROUP BY f.id, f.name, f.description, f.release_date, f.duration, mpa.id, mpa.name
-                       ORDER BY likes DESC
-                       LIMIT ?
-                    )
-                    SELECT pf.film_id, pf.film_name, pf.description, pf.release_date, pf.duration,
-                           pf.mpa_id, pf.mpa_name,
-                           g.id AS genre_id, g.name AS genre_name,
-                           pf.likes
-                    FROM PopularFilms pf
-                           LEFT JOIN film_genres fg ON pf.film_id = fg.film_id
-                           LEFT JOIN genres g ON g.id = fg.genre_id
-                    ORDER BY pf.likes DESC, pf.film_id, g.id;
+                    GROUP BY f.id, f.name, f.description, f.release_date, f.duration, mpa.id, mpa.name
+                    ORDER BY likes DESC
+                    LIMIT :count
+                )
+                SELECT pf.film_id, pf.film_name, pf.description, pf.release_date, pf.duration,
+                        pf.mpa_id, pf.mpa_name,
+                        g.id AS genre_id, g.name AS genre_name,
+                        pf.likes
+                FROM PopularFilms pf
+                        LEFT JOIN film_genres fg ON pf.film_id = fg.film_id
+                        LEFT JOIN genres g ON g.id = fg.genre_id
                 """);
 
-        if (genreId != null && year != null) {
-            log.info("Getting popular films by genreId: {} and year: {}", genreId, year);
-            return jdbcTemplate.query(sqlBuilder.toString(), filmsExtractor, genreId, year, count);
-        } else if (genreId != null) {
-            log.info("Getting popular films by genreId: {}", genreId);
-            return jdbcTemplate.query(sqlBuilder.toString(), filmsExtractor, genreId, count);
-        } else if (year != null) {
-            log.info("Getting popular films by year: {}", year);
-            return jdbcTemplate.query(sqlBuilder.toString(), filmsExtractor, year, count);
-        } else {
-            log.info("Getting popular films");
-            return jdbcTemplate.query(sqlBuilder.toString(), filmsExtractor, count);
+        if (genreId != null) {
+            sqlBuilder.append(" WHERE g.id = :genreId ");
+            params.put("genreId", genreId);
         }
+
+        sqlBuilder.append(" ORDER BY pf.likes DESC, pf.film_id, g.id;");
+
+        log.info("Getting popular films with genreId={} and year={}", genreId, year);
+        return namedParameterJdbcOperations.query(sqlBuilder.toString(), params, filmsExtractor);
     }
 }
