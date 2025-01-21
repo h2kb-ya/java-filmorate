@@ -4,11 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.model.Film;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 @Slf4j
 @Component
@@ -57,6 +53,11 @@ public class InMemoryFilmRepositoryImpl implements FilmRepository {
     @Override
     public Collection<Film> findFilmsByIds(Set<Integer> filmIds) {
         return null;
+    }
+
+    @Override
+    public Collection<Film> getDirectorFilms(Integer id, String sortBy) {
+        return List.of();
     }
 
     @Override

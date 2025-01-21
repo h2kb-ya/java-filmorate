@@ -23,4 +23,6 @@ public interface FilmRepository {
     Collection<Film> getPopular(int count, Integer genreId, Integer year);
 
     Collection<Film> findFilmsByIds(Set<Integer> filmIds);
+
+    Collection<Film> getDirectorFilms(Integer id, String sortBy);
 }
