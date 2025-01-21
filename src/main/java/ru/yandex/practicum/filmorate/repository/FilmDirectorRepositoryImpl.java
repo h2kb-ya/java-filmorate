@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.repository;
 
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
@@ -30,7 +31,7 @@ public class FilmDirectorRepositoryImpl implements FilmDirectorRepository {
             jdbcTemplate.batchUpdate(sqlQuery, new BatchPreparedStatementSetter() {
 
                 @Override
-                public void setValues(PreparedStatement preparedStatement, int i) throws SQLException {
+                public void setValues(@NonNull PreparedStatement preparedStatement, int i) throws SQLException {
                     log.info("Adding director {} to film {}", directorIds.get(i), id);
                     preparedStatement.setInt(1, id);
                     preparedStatement.setInt(2, directorIds.get(i));

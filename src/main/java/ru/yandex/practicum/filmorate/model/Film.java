@@ -17,8 +17,8 @@ import java.util.Set;
 
 @Getter
 @Setter
-@ToString
 @EqualsAndHashCode
+@ToString
 public class Film {
 
     private Integer id;
@@ -38,7 +38,6 @@ public class Film {
     private int likes;
 
     private Set<Genre> genres = new HashSet<>();
-
     private Set<Director> directors = new HashSet<>();
 
     private Mpa mpa;

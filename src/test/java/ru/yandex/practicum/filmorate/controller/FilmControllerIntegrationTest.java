@@ -125,6 +125,7 @@ public class FilmControllerIntegrationTest extends AbstractApplicationMvcIntegra
         assertTrue(filmController.getFilms().isEmpty());
 
         Film film1 = getTestFilm1();
+
         Film film2 = getTestFilm2();
 
         filmController.create(film1);
