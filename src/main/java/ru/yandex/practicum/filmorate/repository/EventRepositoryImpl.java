@@ -2,7 +2,6 @@ package ru.yandex.practicum.filmorate.repository;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.PreparedStatementCreator;
@@ -36,13 +35,9 @@ public class EventRepositoryImpl implements EventRepository {
 
     @Override
     public Collection<Event> getUserFeed(Integer userId) {
-        try {
-            return jdbcTemplate.queryForStream(SELECT_EVENTS_BY_USER_ID, eventRowMapper, userId).toList();
-        } catch (DataAccessException e) {
-            final String errorMessage = String.format("Не удалось получить список событий для пользователя id=%d.", userId);
-            log.error(errorMessage);
-            throw new DataIntegrityViolationException(errorMessage, e.getCause());
-        }
+        final String errorMessage = String.format("Не удалось получить список событий для пользователя id=%d.", userId);
+        log.error(errorMessage);
+        return jdbcTemplate.query(SELECT_EVENTS_BY_USER_ID, eventRowMapper);
     }
 
     @Override

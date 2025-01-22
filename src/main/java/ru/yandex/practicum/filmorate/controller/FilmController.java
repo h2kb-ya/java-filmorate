@@ -46,7 +46,7 @@ public class FilmController {
     @PutMapping("/{id}/like/{userId}")
     public void like(
             @PathVariable @Positive final Integer id,
-            @PathVariable @Positive final Integer userId
+            @PathVariable final Integer userId
     ) {
         filmService.like(id, userId);
     }
@@ -54,7 +54,7 @@ public class FilmController {
     @DeleteMapping("/{id}/like/{userId}")
     public void dislike(
             @PathVariable @Positive final Integer id,
-            @PathVariable @Positive final Integer userId
+            @PathVariable final Integer userId
     ) {
         filmService.dislike(id, userId);
     }

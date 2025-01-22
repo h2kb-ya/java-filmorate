@@ -25,6 +25,7 @@ public class FilmRepositoryImpl implements FilmRepository {
     private final NamedParameterJdbcOperations namedParameterJdbcOperations;
     private final FilmGenreRepository filmGenreRepository;
     private final FilmDirectorRepository filmDirectorRepository;
+    private final DirectorRepository directorRepository;
     private final FilmExtractor filmExtractor;
     private final FilmsExtractor filmsExtractor;
 
@@ -224,6 +225,10 @@ public class FilmRepositoryImpl implements FilmRepository {
 
     @Override
     public Collection<Film> getDirectorFilms(Integer directorId, String sortBy) {
+        if (!directorRepository.isExists(directorId)) {
+            throw new NotFoundException("director with id=" + directorId + " not found");
+        }
+
         String sqlQuery = getSqlQuery(directorId, sortBy, null, null);
 
         log.info("Getting director films");

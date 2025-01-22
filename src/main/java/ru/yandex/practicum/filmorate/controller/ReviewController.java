@@ -49,7 +49,7 @@ public class ReviewController {
     @PutMapping("/{id}/like/{userId}")
     public Review putLikeToReview(
             @PathVariable @Positive Integer id,
-            @PathVariable @Positive Integer userId
+            @PathVariable Integer userId
     ) {
         return reviewService.putLikeToReview(id, userId);
     }
@@ -57,7 +57,7 @@ public class ReviewController {
     @PutMapping("/{id}/dislike/{userId}")
     public Review putDislikeToReview(
             @PathVariable @Positive Integer id,
-            @PathVariable @Positive Integer userId
+            @PathVariable Integer userId
     ) {
         return reviewService.putDislikeToReview(id, userId);
     }
@@ -65,7 +65,7 @@ public class ReviewController {
     @DeleteMapping("{id}/like/{userId}")
     public Review deleteLikeFromReview(
             @PathVariable @Positive Integer id,
-            @PathVariable @Positive Integer userId
+            @PathVariable Integer userId
     ) {
         return reviewService.deleteLikeFromReview(id, userId);
     }
@@ -73,9 +73,8 @@ public class ReviewController {
     @DeleteMapping("{id}/dislike/{userId}")
     public Review deleteDislikeFromReview(
             @PathVariable @Positive Integer id,
-            @PathVariable @Positive Integer userId
+            @PathVariable Integer userId
     ) {
         return reviewService.deleteDislikeFromReview(id, userId);
     }
-
 }
