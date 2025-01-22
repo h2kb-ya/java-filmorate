@@ -7,6 +7,8 @@ DROP TABLE IF EXISTS film_likes CASCADE;
 DROP TABLE IF EXISTS friendships CASCADE;
 DROP TABLE IF EXISTS reviews CASCADE;
 DROP TABLE IF EXISTS user_reactions_to_reviews CASCADE;
+DROP TABLE IF EXISTS film_directors CASCADE;
+DROP TABLE IF EXISTS directors CASCADE;
 
 CREATE TABLE IF NOT EXISTS mpa_ratings (
                              id SERIAL PRIMARY KEY,
@@ -79,4 +81,17 @@ CREATE TABLE IF NOT EXISTS user_reactions_to_reviews (
     reaction    VARCHAR(20) NOT NULL,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (review_id) REFERENCES reviews(review_id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS directors (
+                           id SERIAL PRIMARY KEY,
+                           name VARCHAR(100) UNIQUE NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS film_directors (
+                           film_id INTEGER,
+                           director_id INTEGER,
+                           PRIMARY KEY (film_id, director_id),
+                           FOREIGN KEY (film_id) REFERENCES films(id) ON DELETE CASCADE,
+                           FOREIGN KEY (director_id) REFERENCES directors(id) ON DELETE CASCADE
 );
