@@ -1,6 +1,8 @@
 package ru.yandex.practicum.filmorate.service;
 
 import java.util.Collection;
+
+import ru.yandex.practicum.filmorate.dto.EventDto;
 import ru.yandex.practicum.filmorate.model.User;
 
 public interface UserService {
@@ -24,4 +26,7 @@ public interface UserService {
     Collection<User> getCommonFriends(Integer firstUserId, Integer secondUserId);
 
     boolean userExists(Integer userId);
+
+    Collection<EventDto> getUserFeed(Integer userId);
+
 }
