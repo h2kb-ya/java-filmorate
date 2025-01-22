@@ -8,6 +8,8 @@ import ru.yandex.practicum.filmorate.model.OperationTypes;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.repository.FilmLikesRepository;
 
+import java.util.Collection;
+
 @Service
 @RequiredArgsConstructor
 public class FilmLikesServiceImpl implements FilmLikesService {
@@ -25,5 +27,9 @@ public class FilmLikesServiceImpl implements FilmLikesService {
     public void dislike(Film film, User user) {
         filmLikesRepository.dislike(film, user);
         eventService.addEvent(user.getId(), EventTypes.LIKE, OperationTypes.REMOVE, film.getId());
+    }
+
+    public Collection<Integer> getCommonFilmsIds(Integer firstUserId, Integer secondUserId) {
+        return filmLikesRepository.getCommonFilmsIds(firstUserId, secondUserId);
     }
 }

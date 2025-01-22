@@ -13,7 +13,10 @@ import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.repository.FilmRepository;
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import static ru.yandex.practicum.filmorate.util.FilmorateConstants.DEFAULT_COUNT_VALUE_FOR_GETTING_POPULAR_FILMS;
 
@@ -115,17 +118,33 @@ public class FilmServiceImpl implements FilmService {
         filmLikesService.dislike(film, user);
     }
 
+    public Collection<Film> getCommonFilms(Integer firstUserId, Integer secondUserId) {
+        Set<Integer> commonFilmsIds = new HashSet<>(filmLikesService.getCommonFilmsIds(firstUserId, secondUserId));
+
+        Collection<Film> commonFilms = filmRepository.findFilmsByIds(commonFilmsIds);
+
+        return commonFilms.stream()
+                .filter(film -> commonFilmsIds.contains(film.getId()))
+                .sorted((film1, film2) -> Integer.compare(film2.getLikes(), film1.getLikes()))
+                .collect(Collectors.toList());
+    }
+
     @Override
-    public Collection<Film> getPopular(Integer count) {
+    public Collection<Film> getPopular(int count, Integer genreId, Integer year) {
         if (count == 0) {
-            count = Integer.valueOf(DEFAULT_COUNT_VALUE_FOR_GETTING_POPULAR_FILMS);
+            count = Integer.parseInt(DEFAULT_COUNT_VALUE_FOR_GETTING_POPULAR_FILMS);
         }
 
-        return filmRepository.getPopular(count);
+        return filmRepository.getPopular(count, genreId, year);
     }
 
     @Override
     public Collection<Film> getDirectorFilms(Integer directorId, String sortBy) {
         return filmRepository.getDirectorFilms(directorId, sortBy);
+    }
+
+    @Override
+    public Collection<Film> search(String query, String by) {
+        return filmRepository.search(query, by);
     }
 }

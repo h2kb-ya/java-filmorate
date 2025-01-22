@@ -20,7 +20,11 @@ public interface FilmService {
 
     void dislike(Integer id, Integer userId);
 
-    Collection<Film> getPopular(Integer count);
+    Collection<Film> getPopular(int count, Integer genreId, Integer year);
+
+    Collection<Film> getCommonFilms(Integer firstUserId, Integer secondUserId);
 
     Collection<Film> getDirectorFilms(Integer id, String sortBy);
+
+    Collection<Film> search(String query, String by);
 }

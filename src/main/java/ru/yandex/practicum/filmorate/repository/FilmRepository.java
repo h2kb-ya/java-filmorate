@@ -4,6 +4,7 @@ import ru.yandex.practicum.filmorate.model.Film;
 
 import java.util.Collection;
 import java.util.Optional;
+import java.util.Set;
 
 public interface FilmRepository {
 
@@ -19,7 +20,11 @@ public interface FilmRepository {
 
     Optional<Film> findById(int id);
 
-    Collection<Film> getPopular(int count);
+    Collection<Film> getPopular(int count, Integer genreId, Integer year);
+
+    Collection<Film> findFilmsByIds(Set<Integer> filmIds);
 
     Collection<Film> getDirectorFilms(Integer id, String sortBy);
+
+    Collection<Film> search(String query, String by);
 }
