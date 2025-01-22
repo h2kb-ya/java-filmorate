@@ -142,4 +142,9 @@ public class FilmServiceImpl implements FilmService {
     public Collection<Film> getDirectorFilms(Integer directorId, String sortBy) {
         return filmRepository.getDirectorFilms(directorId, sortBy);
     }
+
+    @Override
+    public Collection<Film> search(String query, String by) {
+        return filmRepository.search(query, by);
+    }
 }

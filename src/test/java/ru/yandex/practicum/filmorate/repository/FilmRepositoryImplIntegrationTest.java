@@ -182,4 +182,38 @@ public class FilmRepositoryImplIntegrationTest {
         assertThat(directorFilms.size()).isEqualTo(2);
         assertThat(directorFilms.stream().findFirst()).isEqualTo(filmRepositoryImpl.findById(1));
     }
+
+    @Test
+    public void searchFilmsByBothTitleAndDirector() {
+        Collection<Film> films = filmRepositoryImpl.search("ноЛАн", "title,director");
+
+        assertThat(films).isNotEmpty();
+        assertThat(films.size()).isEqualTo(2);
+        assertThat(films.stream().findFirst()).isEqualTo(filmRepositoryImpl.findById(1));
+    }
+
+    @Test
+    public void searchFilmsAnywayEmpty() {
+        Collection<Film> films = filmRepositoryImpl.search("не найдено", "director,title");
+
+        assertThat(films).isEmpty();
+    }
+
+    @Test
+    public void searchFilmsByTitle() {
+        Collection<Film> films = filmRepositoryImpl.search("matrix", "title");
+
+        assertThat(films).isNotEmpty();
+        assertThat(films.size()).isEqualTo(1);
+        assertThat(films.stream().findFirst()).isEqualTo(filmRepositoryImpl.findById(2));
+    }
+
+    @Test
+    public void searchFilmsByDirector() {
+        Collection<Film> films = filmRepositoryImpl.search("Вачовски", "director");
+
+        assertThat(films).isNotEmpty();
+        assertThat(films.size()).isEqualTo(1);
+        assertThat(films.stream().findFirst()).isEqualTo(filmRepositoryImpl.findById(2));
+    }
 }

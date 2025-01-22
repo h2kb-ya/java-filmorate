@@ -25,4 +25,6 @@ public interface FilmRepository {
     Collection<Film> findFilmsByIds(Set<Integer> filmIds);
 
     Collection<Film> getDirectorFilms(Integer id, String sortBy);
+
+    Collection<Film> search(String query, String by);
 }
