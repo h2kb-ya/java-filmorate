@@ -37,7 +37,7 @@ public class EventRepositoryImpl implements EventRepository {
     public Collection<Event> getUserFeed(Integer userId) {
         final String errorMessage = String.format("Не удалось получить список событий для пользователя id=%d.", userId);
         log.error(errorMessage);
-        return jdbcTemplate.query(SELECT_EVENTS_BY_USER_ID, eventRowMapper);
+        return jdbcTemplate.query(SELECT_EVENTS_BY_USER_ID, eventRowMapper, userId);
     }
 
     @Override
