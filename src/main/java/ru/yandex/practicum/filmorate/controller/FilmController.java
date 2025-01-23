@@ -12,8 +12,8 @@ import java.util.Collection;
 import static ru.yandex.practicum.filmorate.util.FilmorateConstants.DEFAULT_COUNT_VALUE_FOR_GETTING_POPULAR_FILMS;
 
 @RestController
-@RequestMapping("/films")
 @RequiredArgsConstructor
+@RequestMapping("/films")
 public class FilmController {
 
     private final FilmService filmService;

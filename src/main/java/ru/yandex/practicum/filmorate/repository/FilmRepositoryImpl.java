@@ -67,7 +67,6 @@ public class FilmRepositoryImpl implements FilmRepository {
         Map<String, Object> params = film.toMap();
         params.put("id", film.getId());
 
-        filmDirectorRepository.deleteFilmDirectors(film.getId());
 
         log.info("Updating film {}", film);
         int updatedRow = namedParameterJdbcOperations.update(sqlQuery, params);
@@ -76,7 +75,16 @@ public class FilmRepositoryImpl implements FilmRepository {
             throw new DataIntegrityViolationException("He удалось обновить фильм: " + film);
         }
 
-        filmDirectorRepository.setFilmDirectors(film.getId(), film.getDirectors());
+        filmDirectorRepository.deleteFilmDirectors(film.getId());
+        filmGenreRepository.delete(film.getId());
+
+        if (!film.getGenres().isEmpty()) {
+            filmGenreRepository.add(film);
+        }
+
+        if (!film.getDirectors().isEmpty()) {
+            filmDirectorRepository.setFilmDirectors(film.getId(), film.getDirectors());
+        }
 
         return film;
     }

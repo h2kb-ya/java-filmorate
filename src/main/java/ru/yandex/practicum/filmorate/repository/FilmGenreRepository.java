@@ -6,6 +6,6 @@ public interface FilmGenreRepository {
 
     void add(Film film);
 
-    void delete(Film film);
+    void delete(Integer id);
 
 }

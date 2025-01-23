@@ -25,7 +25,10 @@ public class FilmGenreRepositoryImpl implements FilmGenreRepository {
     }
 
     @Override
-    public void delete(Film film) {
+    public void delete(Integer id) {
+        String sqlQuery = "DELETE FROM film_genres WHERE film_id = ?";
 
+        log.info("Deleting genre {}", id);
+        jdbcTemplate.update(sqlQuery, id);
     }
 }
