@@ -184,7 +184,7 @@ public class FilmRepositoryImpl implements FilmRepository {
     }
 
     @Override
-    public List<Film> getPopular(int count, Integer genreId, Integer year) {
+    public Collection<Film> getPopular(int count, Integer genreId, Integer year) {
         Map<String, Object> params = new HashMap<>();
         params.put("count", count);
 
@@ -228,7 +228,14 @@ public class FilmRepositoryImpl implements FilmRepository {
         sqlBuilder.append(" ORDER BY pf.likes DESC, pf.film_id, g.id;");
 
         log.info("Getting popular films with genreId={} and year={}", genreId, year);
-        return namedParameterJdbcOperations.query(sqlBuilder.toString(), params, filmsExtractor);
+
+        Collection<Film> films = namedParameterJdbcOperations.query(sqlBuilder.toString(), params, filmsExtractor);
+
+        films.forEach(film -> {
+            film.setGenres(new HashSet<>(filmGenreRepository.getFilmGenres(film.getId())));
+        });
+
+        return films;
     }
 
     @Override

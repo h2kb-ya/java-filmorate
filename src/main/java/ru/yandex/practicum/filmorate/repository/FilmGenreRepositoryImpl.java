@@ -6,6 +6,9 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.repository.mapper.GenreRowMapper;
+
+import java.util.Collection;
 
 @Slf4j
 @Repository
@@ -30,5 +33,11 @@ public class FilmGenreRepositoryImpl implements FilmGenreRepository {
 
         log.info("Deleting genre {}", id);
         jdbcTemplate.update(sqlQuery, id);
+    }
+
+    public Collection<Genre> getFilmGenres(int filmId) {
+        String sqlQuery = "SELECT g.id, g.name FROM film_genres fg JOIN genres g ON g.id = fg.genre_id WHERE fg.film_id = ?";
+
+        return jdbcTemplate.query(sqlQuery, new GenreRowMapper(), filmId);
     }
 }
