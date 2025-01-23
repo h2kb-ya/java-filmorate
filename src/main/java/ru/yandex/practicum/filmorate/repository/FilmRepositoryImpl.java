@@ -231,9 +231,9 @@ public class FilmRepositoryImpl implements FilmRepository {
 
         Collection<Film> films = namedParameterJdbcOperations.query(sqlBuilder.toString(), params, filmsExtractor);
 
-        films.forEach(film -> {
-            film.setGenres(new HashSet<>(filmGenreRepository.getFilmGenres(film.getId())));
-        });
+        if (films != null) {
+            films.forEach(film -> film.setGenres(new HashSet<>(filmGenreRepository.getFilmGenres(film.getId()))));
+        }
 
         return films;
     }
