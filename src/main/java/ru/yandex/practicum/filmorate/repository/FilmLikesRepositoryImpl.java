@@ -46,4 +46,12 @@ public class FilmLikesRepositoryImpl implements FilmLikesRepository {
 
         return jdbcTemplate.query(sqlQuery, (rs, rowNum) -> rs.getInt("film_id"), firstUserId, secondUserId);
     }
+
+    @Override
+    public List<Integer> getLikedFilmIds(Integer userId) {
+        String sqlQuery = "SELECT film_id FROM film_likes WHERE user_id = ?";
+
+        log.info("Getting liked films for user {}", userId);
+        return jdbcTemplate.query(sqlQuery, (rs, rowNum) -> rs.getInt("film_id"), userId);
+    }
 }

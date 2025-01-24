@@ -9,6 +9,7 @@ import ru.yandex.practicum.filmorate.dto.EventDto;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.mapper.EventMapper;
 import ru.yandex.practicum.filmorate.model.EventTypes;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.OperationTypes;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.repository.EventRepository;
@@ -24,6 +25,7 @@ public class UserServiceImpl implements UserService {
     private final FriendshipRepository friendshipRepository;
     private final EventRepository eventRepository;
     private final EventService eventService;
+    private final RecommendationService recommendationService;
 
     @Override
     public Collection<User> getUsers() {
@@ -114,6 +116,11 @@ public class UserServiceImpl implements UserService {
         } else {
             throw new NotFoundException("Пользователь с id - " + userId + "не найден.");
         }
+    }
+
+    @Override
+    public Collection<Film> getRecommendations(final Integer userId) {
+        return recommendationService.getRecommendations(userId).stream().toList();
     }
 
 }
