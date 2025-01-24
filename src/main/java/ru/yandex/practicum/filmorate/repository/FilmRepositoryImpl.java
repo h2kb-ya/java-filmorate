@@ -221,7 +221,7 @@ public class FilmRepositoryImpl implements FilmRepository {
                 """);
 
         if (genreId != null) {
-            sqlBuilder.append(" WHERE g.id = :genreId ");
+            sqlBuilder.append(" WHERE pf.film_id IN (SELECT film_id FROM FILM_GENRES WHERE genre_id = :genreId) ");
             params.put("genreId", genreId);
         }
 
@@ -229,13 +229,7 @@ public class FilmRepositoryImpl implements FilmRepository {
 
         log.info("Getting popular films with genreId={} and year={}", genreId, year);
 
-        Collection<Film> films = namedParameterJdbcOperations.query(sqlBuilder.toString(), params, filmsExtractor);
-
-        if (films != null) {
-            films.forEach(film -> film.setGenres(new HashSet<>(filmGenreRepository.getFilmGenres(film.getId()))));
-        }
-
-        return films;
+        return namedParameterJdbcOperations.query(sqlBuilder.toString(), params, filmsExtractor);
     }
 
     @Override
