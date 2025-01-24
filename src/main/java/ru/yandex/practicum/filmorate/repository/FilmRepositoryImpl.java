@@ -25,6 +25,7 @@ public class FilmRepositoryImpl implements FilmRepository {
     private final NamedParameterJdbcOperations namedParameterJdbcOperations;
     private final FilmGenreRepository filmGenreRepository;
     private final FilmDirectorRepository filmDirectorRepository;
+    private final DirectorRepository directorRepository;
     private final FilmExtractor filmExtractor;
     private final FilmsExtractor filmsExtractor;
 
@@ -66,7 +67,6 @@ public class FilmRepositoryImpl implements FilmRepository {
         Map<String, Object> params = film.toMap();
         params.put("id", film.getId());
 
-        filmDirectorRepository.deleteFilmDirectors(film.getId());
 
         log.info("Updating film {}", film);
         int updatedRow = namedParameterJdbcOperations.update(sqlQuery, params);
@@ -75,7 +75,16 @@ public class FilmRepositoryImpl implements FilmRepository {
             throw new DataIntegrityViolationException("He удалось обновить фильм: " + film);
         }
 
-        filmDirectorRepository.setFilmDirectors(film.getId(), film.getDirectors());
+        filmDirectorRepository.deleteFilmDirectors(film.getId());
+        filmGenreRepository.delete(film.getId());
+
+        if (!film.getGenres().isEmpty()) {
+            filmGenreRepository.add(film);
+        }
+
+        if (!film.getDirectors().isEmpty()) {
+            filmDirectorRepository.setFilmDirectors(film.getId(), film.getDirectors());
+        }
 
         return film;
     }
@@ -175,7 +184,7 @@ public class FilmRepositoryImpl implements FilmRepository {
     }
 
     @Override
-    public List<Film> getPopular(int count, Integer genreId, Integer year) {
+    public Collection<Film> getPopular(int count, Integer genreId, Integer year) {
         Map<String, Object> params = new HashMap<>();
         params.put("count", count);
 
@@ -212,18 +221,23 @@ public class FilmRepositoryImpl implements FilmRepository {
                 """);
 
         if (genreId != null) {
-            sqlBuilder.append(" WHERE g.id = :genreId ");
+            sqlBuilder.append(" WHERE pf.film_id IN (SELECT film_id FROM FILM_GENRES WHERE genre_id = :genreId) ");
             params.put("genreId", genreId);
         }
 
         sqlBuilder.append(" ORDER BY pf.likes DESC, pf.film_id, g.id;");
 
         log.info("Getting popular films with genreId={} and year={}", genreId, year);
+
         return namedParameterJdbcOperations.query(sqlBuilder.toString(), params, filmsExtractor);
     }
 
     @Override
     public Collection<Film> getDirectorFilms(Integer directorId, String sortBy) {
+        if (!directorRepository.isExists(directorId)) {
+            throw new NotFoundException("director with id=" + directorId + " not found");
+        }
+
         String sqlQuery = getSqlQuery(directorId, sortBy, null, null);
 
         log.info("Getting director films");

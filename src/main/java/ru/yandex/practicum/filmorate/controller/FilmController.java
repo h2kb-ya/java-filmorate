@@ -12,8 +12,8 @@ import java.util.Collection;
 import static ru.yandex.practicum.filmorate.util.FilmorateConstants.DEFAULT_COUNT_VALUE_FOR_GETTING_POPULAR_FILMS;
 
 @RestController
-@RequestMapping("/films")
 @RequiredArgsConstructor
+@RequestMapping("/films")
 public class FilmController {
 
     private final FilmService filmService;
@@ -46,7 +46,7 @@ public class FilmController {
     @PutMapping("/{id}/like/{userId}")
     public void like(
             @PathVariable @Positive final Integer id,
-            @PathVariable @Positive final Integer userId
+            @PathVariable final Integer userId
     ) {
         filmService.like(id, userId);
     }
@@ -54,7 +54,7 @@ public class FilmController {
     @DeleteMapping("/{id}/like/{userId}")
     public void dislike(
             @PathVariable @Positive final Integer id,
-            @PathVariable @Positive final Integer userId
+            @PathVariable final Integer userId
     ) {
         filmService.dislike(id, userId);
     }

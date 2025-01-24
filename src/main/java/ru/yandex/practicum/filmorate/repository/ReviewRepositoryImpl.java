@@ -81,12 +81,14 @@ public class ReviewRepositoryImpl implements ReviewRepository {
 
     @Override
     public Review updateReview(Review currentReview) {
+        Review updatedReview = getReview(currentReview.getReviewId());
+
         try {
             jdbcTemplate.update(UPDATE_CURR_REVIEW,
                     currentReview.getContent(),
                     currentReview.getIsPositive(),
-                    currentReview.getUserId(),
-                    currentReview.getFilmId(),
+                    updatedReview.getUserId(),
+                    updatedReview.getFilmId(),
                     currentReview.getUseful(),
                     currentReview.getReviewId()
             );
@@ -130,5 +132,4 @@ public class ReviewRepositoryImpl implements ReviewRepository {
             throw new DataIntegrityViolationException(errorMessage, e.getCause());
         }
     }
-
 }

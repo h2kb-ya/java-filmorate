@@ -12,10 +12,7 @@ import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.repository.FilmRepository;
 
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static ru.yandex.practicum.filmorate.util.FilmorateConstants.DEFAULT_COUNT_VALUE_FOR_GETTING_POPULAR_FILMS;
@@ -49,7 +46,14 @@ public class FilmServiceImpl implements FilmService {
                     "Ошибка при создании фильма: указанный рейтинг с id " + film.getMpa().getId() + " не найден");
         }
 
+        Set<Genre> sortedGenres = film.getGenres().stream()
+                .sorted(Comparator.comparingInt(Genre::getId))
+                .collect(Collectors.toCollection(LinkedHashSet::new));
+
+        film.setGenres(sortedGenres);
+
         film.getGenres().stream()
+                .sorted(Comparator.comparingInt(Genre::getId))
                 .map(Genre::getId)
                 .forEach(genreId -> {
                     if (!genreService.isGenreExists(genreId)) {
@@ -75,15 +79,18 @@ public class FilmServiceImpl implements FilmService {
         filmRepository.findById(film.getId())
                 .orElseThrow(() -> new NotFoundException("Фильм c id " + film.getId() + " не найден."));
         mpaService.getRatingById(film.getMpa().getId());
-        List<Integer> genreIds = film.getGenres().stream()
-                .map(Genre::getId)
-                .toList();
+
+        Set<Genre> sortedGenres = film.getGenres().stream()
+                .sorted(Comparator.comparingInt(Genre::getId))
+                .collect(Collectors.toCollection(LinkedHashSet::new));
+
+        film.setGenres(sortedGenres);
 
         List<Integer> directorIds = film.getDirectors().stream()
                 .map(Director::getId)
                 .toList();
 
-        genreIds.forEach(genreService::getGenreById);
+        sortedGenres.forEach(genre -> genreService.getGenreById(genre.getId()));
         directorIds.forEach(directorService::getById);
 
         filmRepository.update(film);
