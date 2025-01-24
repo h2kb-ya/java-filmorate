@@ -31,11 +31,15 @@ public class RecommendationServiceImpl implements RecommendationService {
         List<User> allUsers = userRepository.findAll().stream().toList();
         User similarUser = findMostSimilarUser(user, allUsers);
 
-        Set<Integer> commonFilmIds = getCommonFilms(user, similarUser);
-        List<Integer> targetUserLikedFilms = filmLikesRepository.getLikedFilmIds(user.getId());
+        if (similarUser == null) {
+            return List.of();
+        }
 
-        return filmRepository.findFilmsByIds(commonFilmIds.stream()
-                .filter(filmId -> !targetUserLikedFilms.contains(filmId))
+        Set<Integer> commonFilmIds = getCommonFilms(user, similarUser);
+        List<Integer> userLikedFilms = filmLikesRepository.getLikedFilmIds(similarUser.getId());
+
+        return filmRepository.findFilmsByIds(userLikedFilms.stream()
+                .filter(filmId -> !commonFilmIds.contains(filmId))
                 .collect(Collectors.toSet())).stream().toList();
     }
 
@@ -51,10 +55,6 @@ public class RecommendationServiceImpl implements RecommendationService {
                     mostSimilarUser = user;
                 }
             }
-        }
-
-        if (mostSimilarUser == null) {
-            throw new NotFoundException("Пользователь с похожими вкусами не найден");
         }
 
         return mostSimilarUser;
