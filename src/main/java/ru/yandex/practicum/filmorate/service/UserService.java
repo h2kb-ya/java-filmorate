@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.service;
 import java.util.Collection;
 
 import ru.yandex.practicum.filmorate.dto.EventDto;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 
 public interface UserService {
@@ -29,4 +30,5 @@ public interface UserService {
 
     Collection<EventDto> getUserFeed(Integer userId);
 
+    Collection<Film> getRecommendations(Integer userId);
 }

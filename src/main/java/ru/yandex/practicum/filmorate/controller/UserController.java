@@ -5,6 +5,7 @@ import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.dto.EventDto;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
 
@@ -74,5 +75,10 @@ public class UserController {
     @GetMapping("/{id}/feed")
     public Collection<EventDto> getUserFeed(@PathVariable(name = "id") @Positive final Integer userId) {
         return userService.getUserFeed(userId);
+    }
+
+    @GetMapping("{id}/recommendations")
+    public Collection<Film> getRecommendations(@PathVariable(name = "id") @Positive final Integer id) {
+        return userService.getRecommendations(id);
     }
 }
