@@ -1,6 +1,5 @@
 package ru.yandex.practicum.filmorate.dto;
 
-import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 
 @Getter
@@ -12,7 +11,5 @@ import lombok.*;
 public class DirectorDto {
 
     private Integer id;
-
-    @NotBlank(message = "Name of the director must not be blank")
     private String name;
 }
