@@ -9,7 +9,6 @@ import ru.yandex.practicum.filmorate.mapper.DirectorMapper;
 import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.service.DirectorService;
 
-import java.util.Collection;
 import java.util.List;
 
 @RestController
