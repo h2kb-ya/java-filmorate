@@ -8,6 +8,7 @@ import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.repository.DirectorRepository;
 
 import java.util.Collection;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -36,8 +37,8 @@ public class DirectorServiceImpl implements DirectorService {
     }
 
     @Override
-    public Collection<Director> getAll() {
-        return directorRepository.findAll();
+    public List<Director> getAll() {
+        return directorRepository.findAll().stream().toList();
     }
 
     @Override
