@@ -8,6 +8,8 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MvcResult;
+import ru.yandex.practicum.filmorate.dto.FilmDto;
+import ru.yandex.practicum.filmorate.mapper.FilmMapper;
 import ru.yandex.practicum.filmorate.model.*;
 import ru.yandex.practicum.filmorate.repository.DirectorRepository;
 import ru.yandex.practicum.filmorate.repository.FilmRepository;
@@ -238,7 +240,7 @@ public class FilmControllerIntegrationTest extends AbstractApplicationMvcIntegra
         User user = new User("user@yandex.ru", "user", "User", LocalDate.of(1985, 1, 1));
         User savedUser = userServiceImpl.create(user);
         Film film = getTestFilm1();
-        Film savedFilm = filmController.create(film);
+        FilmDto savedFilm = filmController.create(film);
 
         assertThat(savedFilm.getLikes()).isEqualTo(0);
 
@@ -272,7 +274,7 @@ public class FilmControllerIntegrationTest extends AbstractApplicationMvcIntegra
 
         int badUserId = 999;
         Film film = getTestFilm1();
-        Film savedFilm = filmController.create(film);
+        Film savedFilm = FilmMapper.toEntity(filmController.create(film));
 
         mockMvc.perform(put("/films/{id}/like/{userId}", savedFilm.getId(), badUserId)
                         .contentType(MediaType.APPLICATION_JSON))
@@ -289,7 +291,7 @@ public class FilmControllerIntegrationTest extends AbstractApplicationMvcIntegra
         User user = new User("user@yandex.ru", "user", "User", LocalDate.of(1985, 1, 1));
         User savedUser = userServiceImpl.create(user);
         Film film = getTestFilm1();
-        Film savedFilm = filmController.create(film);
+        Film savedFilm = FilmMapper.toEntity(filmController.create(film));
 
         assertThat(savedFilm.getLikes()).isEqualTo(0);
 
@@ -328,7 +330,7 @@ public class FilmControllerIntegrationTest extends AbstractApplicationMvcIntegra
                 .toList();
 
         List<Integer> filmIds = filmController.getFilms().stream()
-                .map(Film::getId)
+                .map(FilmDto::getId)
                 .toList();
 
         IntStream.range(20, 100)
@@ -377,9 +379,9 @@ public class FilmControllerIntegrationTest extends AbstractApplicationMvcIntegra
         userServiceImpl.create(user);
         filmController.like(film3.getId(), user.getId());
 
-        Collection<Film> films = filmController.getDirectorFilms(director1.getId(), "likes");
+        Collection<FilmDto> films = filmController.getDirectorFilms(director1.getId(), "likes");
 
-        assertThat(Objects.equals(films.stream().findFirst().orElse(null), film3)).isTrue();
+        assertThat(Objects.equals(films.stream().findFirst().orElse(null), FilmMapper.toDto(film3))).isTrue();
     }
 
     @Test
@@ -404,9 +406,9 @@ public class FilmControllerIntegrationTest extends AbstractApplicationMvcIntegra
         filmController.create(film2);
         filmController.create(film3);
 
-        Collection<Film> films = filmController.getDirectorFilms(director1.getId(), "year");
+        Collection<FilmDto> films = filmController.getDirectorFilms(director1.getId(), "year");
 
-        assertThat(Objects.equals(films.stream().findFirst().orElse(null), film1)).isTrue();
+        assertThat(Objects.equals(films.stream().findFirst().orElse(null), FilmMapper.toDto(film1))).isTrue();
     }
 
     private static Integer getRandomElement(List<Integer> list) {
