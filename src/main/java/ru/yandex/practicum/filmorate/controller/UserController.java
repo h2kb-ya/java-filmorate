@@ -5,11 +5,14 @@ import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.dto.EventDto;
+import ru.yandex.practicum.filmorate.dto.UserDto;
+import ru.yandex.practicum.filmorate.mapper.UserMapper;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
 
 import java.util.Collection;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/users")
@@ -65,11 +68,11 @@ public class UserController {
     }
 
     @GetMapping("/{id}/friends/common/{otherId}")
-    public Collection<User> getCommonFriends(
+    public Collection<UserDto> getCommonFriends(
             @PathVariable(name = "id") @Positive final Integer firstUserId,
             @PathVariable(name = "otherId") final Integer secondUserId
     ) {
-        return userService.getCommonFriends(firstUserId, secondUserId);
+        return userService.getCommonFriends(firstUserId, secondUserId).stream().map(UserMapper::toDto).collect(Collectors.toList());
     }
 
     @GetMapping("/{id}/feed")

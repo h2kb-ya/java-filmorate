@@ -2,7 +2,7 @@ package ru.yandex.practicum.filmorate.service;
 
 import ru.yandex.practicum.filmorate.model.Director;
 
-import java.util.Collection;
+import java.util.List;
 
 public interface DirectorService {
 
@@ -14,7 +14,7 @@ public interface DirectorService {
 
     void removeById(Integer id);
 
-    Collection<Director> getAll();
+    List<Director> getAll();
 
     boolean isDirectorExists(Integer id);
 }

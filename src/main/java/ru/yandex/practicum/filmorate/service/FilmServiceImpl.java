@@ -6,10 +6,8 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.ForeignKeyViolationException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
-import ru.yandex.practicum.filmorate.model.Director;
-import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.Genre;
-import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.model.*;
+import ru.yandex.practicum.filmorate.repository.FilmLikesRepository;
 import ru.yandex.practicum.filmorate.repository.FilmRepository;
 
 import java.util.*;
@@ -26,8 +24,9 @@ public class FilmServiceImpl implements FilmService {
     private final UserService userService;
     private final MpaService mpaService;
     private final GenreService genreService;
-    private final FilmLikesService filmLikesService;
     private final DirectorService directorService;
+    private final FilmLikesRepository filmLikesRepository;
+    private final EventService eventService;
 
     @Override
     public Collection<Film> getFilms() {
@@ -112,7 +111,8 @@ public class FilmServiceImpl implements FilmService {
         Film film = filmRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Фильм c id " + id + " не найден."));
 
-        filmLikesService.like(film, user);
+        filmLikesRepository.like(film, user);
+        eventService.addEvent(user.getId(), EventTypes.LIKE, OperationTypes.ADD, film.getId());
     }
 
     @Override
@@ -122,11 +122,12 @@ public class FilmServiceImpl implements FilmService {
         Film film = filmRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Фильм c id " + id + " не найден."));
 
-        filmLikesService.dislike(film, user);
+        filmLikesRepository.dislike(film, user);
+        eventService.addEvent(user.getId(), EventTypes.LIKE, OperationTypes.REMOVE, film.getId());
     }
 
     public Collection<Film> getCommonFilms(Integer firstUserId, Integer secondUserId) {
-        Set<Integer> commonFilmsIds = new HashSet<>(filmLikesService.getCommonFilmsIds(firstUserId, secondUserId));
+        Set<Integer> commonFilmsIds = new HashSet<>(filmLikesRepository.getCommonFilmsIds(firstUserId, secondUserId));
 
         Collection<Film> commonFilms = filmRepository.findFilmsByIds(commonFilmsIds);
 
