@@ -1,8 +1,9 @@
 package ru.yandex.practicum.filmorate.repository;
 
+import ru.yandex.practicum.filmorate.model.User;
+
 import java.util.Collection;
 import java.util.Optional;
-import ru.yandex.practicum.filmorate.model.User;
 
 public interface UserRepository {
 
@@ -10,7 +11,7 @@ public interface UserRepository {
 
     User update(User user);
 
-    void delete(User user);
+    void deleteById(Integer id);
 
     void deleteAll();
 

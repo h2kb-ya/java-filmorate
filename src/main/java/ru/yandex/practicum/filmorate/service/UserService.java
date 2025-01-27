@@ -1,6 +1,9 @@
 package ru.yandex.practicum.filmorate.service;
 
 import java.util.Collection;
+
+import ru.yandex.practicum.filmorate.dto.EventDto;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 
 public interface UserService {
@@ -13,6 +16,8 @@ public interface UserService {
 
     User update(User user);
 
+    void deleteById(Integer id);
+
     void addFriend(Integer userId, Integer friendId);
 
     void removeFriend(Integer userId, Integer friendId);
@@ -22,4 +27,8 @@ public interface UserService {
     Collection<User> getCommonFriends(Integer firstUserId, Integer secondUserId);
 
     boolean userExists(Integer userId);
+
+    Collection<EventDto> getUserFeed(Integer userId);
+
+    Collection<Film> getRecommendations(Integer userId);
 }

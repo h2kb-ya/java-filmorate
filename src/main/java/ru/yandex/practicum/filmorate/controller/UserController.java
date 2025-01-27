@@ -2,18 +2,17 @@ package ru.yandex.practicum.filmorate.controller;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
-import java.util.Collection;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.dto.EventDto;
+import ru.yandex.practicum.filmorate.dto.UserDto;
+import ru.yandex.practicum.filmorate.mapper.UserMapper;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
+
+import java.util.Collection;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/users")
@@ -42,10 +41,15 @@ public class UserController {
         return userService.update(user);
     }
 
+    @DeleteMapping("/{id}")
+    public void deleteById(@PathVariable(name = "id") @Positive final Integer id) {
+        userService.deleteById(id);
+    }
+
     @PutMapping("/{id}/friends/{friendId}")
     public void addFriend(
             @PathVariable(name = "id") @Positive final Integer userId,
-            @PathVariable @Positive final Integer friendId
+            @PathVariable final Integer friendId
     ) {
         userService.addFriend(userId, friendId);
     }
@@ -53,7 +57,7 @@ public class UserController {
     @DeleteMapping("/{id}/friends/{friendId}")
     public void removeFriend(
             @PathVariable(name = "id") @Positive final Integer userId,
-            @PathVariable @Positive final Integer friendId
+            @PathVariable final Integer friendId
     ) {
         userService.removeFriend(userId, friendId);
     }
@@ -64,10 +68,20 @@ public class UserController {
     }
 
     @GetMapping("/{id}/friends/common/{otherId}")
-    public Collection<User> getCommonFriends(
+    public Collection<UserDto> getCommonFriends(
             @PathVariable(name = "id") @Positive final Integer firstUserId,
-            @PathVariable(name = "otherId") @Positive final Integer secondUserId
+            @PathVariable(name = "otherId") final Integer secondUserId
     ) {
-        return userService.getCommonFriends(firstUserId, secondUserId);
+        return userService.getCommonFriends(firstUserId, secondUserId).stream().map(UserMapper::toDto).collect(Collectors.toList());
+    }
+
+    @GetMapping("/{id}/feed")
+    public Collection<EventDto> getUserFeed(@PathVariable(name = "id") @Positive final Integer userId) {
+        return userService.getUserFeed(userId);
+    }
+
+    @GetMapping("{id}/recommendations")
+    public Collection<Film> getRecommendations(@PathVariable(name = "id") @Positive final Integer id) {
+        return userService.getRecommendations(id);
     }
 }

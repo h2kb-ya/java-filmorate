@@ -1,17 +1,17 @@
 package ru.yandex.practicum.filmorate.service;
 
-import java.util.Collection;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.ForeignKeyViolationException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
-import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.Genre;
-import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.model.*;
+import ru.yandex.practicum.filmorate.repository.FilmLikesRepository;
 import ru.yandex.practicum.filmorate.repository.FilmRepository;
+
+import java.util.*;
+import java.util.stream.Collectors;
 
 import static ru.yandex.practicum.filmorate.util.FilmorateConstants.DEFAULT_COUNT_VALUE_FOR_GETTING_POPULAR_FILMS;
 
@@ -24,7 +24,9 @@ public class FilmServiceImpl implements FilmService {
     private final UserService userService;
     private final MpaService mpaService;
     private final GenreService genreService;
-    private final FilmLikesService filmLikesService;
+    private final DirectorService directorService;
+    private final FilmLikesRepository filmLikesRepository;
+    private final EventService eventService;
 
     @Override
     public Collection<Film> getFilms() {
@@ -43,12 +45,28 @@ public class FilmServiceImpl implements FilmService {
                     "Ошибка при создании фильма: указанный рейтинг с id " + film.getMpa().getId() + " не найден");
         }
 
+        Set<Genre> sortedGenres = film.getGenres().stream()
+                .sorted(Comparator.comparingInt(Genre::getId))
+                .collect(Collectors.toCollection(LinkedHashSet::new));
+
+        film.setGenres(sortedGenres);
+
         film.getGenres().stream()
+                .sorted(Comparator.comparingInt(Genre::getId))
                 .map(Genre::getId)
                 .forEach(genreId -> {
                     if (!genreService.isGenreExists(genreId)) {
                         throw new ForeignKeyViolationException(
                                 "Ошибка при создании фильма: указанный жанр с id " + genreId + " не найден");
+                    }
+                });
+
+        film.getDirectors().stream()
+                .map(Director::getId)
+                .forEach(directorId -> {
+                    if (!directorService.isDirectorExists(directorId)) {
+                        throw new ForeignKeyViolationException(
+                                "Ошибка при создании фильма: указанный режиссер с id " + directorId + " не найден");
                     }
                 });
 
@@ -60,15 +78,30 @@ public class FilmServiceImpl implements FilmService {
         filmRepository.findById(film.getId())
                 .orElseThrow(() -> new NotFoundException("Фильм c id " + film.getId() + " не найден."));
         mpaService.getRatingById(film.getMpa().getId());
-        List<Integer> genreIds = film.getGenres().stream()
-                .map(Genre::getId)
+
+        Set<Genre> sortedGenres = film.getGenres().stream()
+                .sorted(Comparator.comparingInt(Genre::getId))
+                .collect(Collectors.toCollection(LinkedHashSet::new));
+
+        film.setGenres(sortedGenres);
+
+        List<Integer> directorIds = film.getDirectors().stream()
+                .map(Director::getId)
                 .toList();
 
-        genreIds.forEach(genreService::getGenreById);
+        sortedGenres.forEach(genre -> genreService.getGenreById(genre.getId()));
+        directorIds.forEach(directorService::getById);
 
         filmRepository.update(film);
 
         return film;
+    }
+
+    @Override
+    public void deleteById(Integer id) {
+        filmRepository.findById(id).ifPresentOrElse(film -> filmRepository.deleteById(id), () -> {
+            throw new NotFoundException("Фильм с id - " + id + " не найден.");
+        });
     }
 
     @Override
@@ -78,7 +111,8 @@ public class FilmServiceImpl implements FilmService {
         Film film = filmRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Фильм c id " + id + " не найден."));
 
-        filmLikesService.like(film, user);
+        filmLikesRepository.like(film, user);
+        eventService.addEvent(user.getId(), EventTypes.LIKE, OperationTypes.ADD, film.getId());
     }
 
     @Override
@@ -88,15 +122,37 @@ public class FilmServiceImpl implements FilmService {
         Film film = filmRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Фильм c id " + id + " не найден."));
 
-        filmLikesService.dislike(film, user);
+        filmLikesRepository.dislike(film, user);
+        eventService.addEvent(user.getId(), EventTypes.LIKE, OperationTypes.REMOVE, film.getId());
+    }
+
+    public Collection<Film> getCommonFilms(Integer firstUserId, Integer secondUserId) {
+        Set<Integer> commonFilmsIds = new HashSet<>(filmLikesRepository.getCommonFilmsIds(firstUserId, secondUserId));
+
+        Collection<Film> commonFilms = filmRepository.findFilmsByIds(commonFilmsIds);
+
+        return commonFilms.stream()
+                .filter(film -> commonFilmsIds.contains(film.getId()))
+                .sorted((film1, film2) -> Integer.compare(film2.getLikes(), film1.getLikes()))
+                .collect(Collectors.toList());
     }
 
     @Override
-    public Collection<Film> getPopular(Integer count) {
+    public Collection<Film> getPopular(int count, Integer genreId, Integer year) {
         if (count == 0) {
-            count = Integer.valueOf(DEFAULT_COUNT_VALUE_FOR_GETTING_POPULAR_FILMS);
+            count = Integer.parseInt(DEFAULT_COUNT_VALUE_FOR_GETTING_POPULAR_FILMS);
         }
 
-        return filmRepository.getPopular(count);
+        return filmRepository.getPopular(count, genreId, year);
+    }
+
+    @Override
+    public Collection<Film> getDirectorFilms(Integer directorId, String sortBy) {
+        return filmRepository.getDirectorFilms(directorId, sortBy);
+    }
+
+    @Override
+    public Collection<Film> search(String query, String by) {
+        return filmRepository.search(query, by);
     }
 }

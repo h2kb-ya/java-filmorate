@@ -1,12 +1,20 @@
 package ru.yandex.practicum.filmorate.service;
 
 import java.util.Collection;
+import java.util.Comparator;
+import java.util.LinkedHashSet;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.dto.EventDto;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.mapper.EventMapper;
+import ru.yandex.practicum.filmorate.model.EventTypes;
+import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.OperationTypes;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.repository.EventRepository;
 import ru.yandex.practicum.filmorate.repository.FriendshipRepository;
 import ru.yandex.practicum.filmorate.repository.UserRepository;
 
@@ -17,6 +25,9 @@ public class UserServiceImpl implements UserService {
     @Qualifier("userRepositoryImpl")
     private final UserRepository userRepository;
     private final FriendshipRepository friendshipRepository;
+    private final EventRepository eventRepository;
+    private final EventService eventService;
+    private final RecommendationService recommendationService;
 
     @Override
     public Collection<User> getUsers() {
@@ -44,9 +55,19 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public void deleteById(Integer id) {
+        if (userExists(id)) {
+            userRepository.deleteById(id);
+        } else {
+            throw new NotFoundException("Пользователь с id - " + id + "не найден.");
+        }
+    }
+
+    @Override
     public void addFriend(final Integer userId, final Integer friendId) {
         if (userExists(userId) && userExists(friendId)) {
             friendshipRepository.addFriend(userId, friendId);
+            eventService.addEvent(userId, EventTypes.FRIEND, OperationTypes.ADD, friendId);
         }
     }
 
@@ -54,6 +75,7 @@ public class UserServiceImpl implements UserService {
     public void removeFriend(final Integer userId, final Integer friendId) {
         if (userExists(userId) && userExists(friendId)) {
             friendshipRepository.removeFriend(userId, friendId);
+            eventService.addEvent(userId, EventTypes.FRIEND, OperationTypes.REMOVE, friendId);
         }
     }
 
@@ -63,7 +85,8 @@ public class UserServiceImpl implements UserService {
 
         return friendshipRepository.getFriends(userId).stream()
                 .map(this::get)
-                .collect(Collectors.toSet());
+                .sorted(Comparator.comparing(User::getId))
+                .collect(Collectors.toCollection(LinkedHashSet::new));
     }
 
     @Override
@@ -86,4 +109,21 @@ public class UserServiceImpl implements UserService {
 
         return user != null;
     }
+
+    @Override
+    public Collection<EventDto> getUserFeed(Integer userId) {
+        if (userExists(userId)) {
+            return eventRepository.getUserFeed(userId).stream()
+                    .map(EventMapper::mapToEventDto)
+                    .collect(Collectors.toList());
+        } else {
+            throw new NotFoundException("Пользователь с id - " + userId + "не найден.");
+        }
+    }
+
+    @Override
+    public Collection<Film> getRecommendations(final Integer userId) {
+        return recommendationService.getRecommendations(userId).stream().toList();
+    }
+
 }
